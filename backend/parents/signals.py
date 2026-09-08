@@ -29,7 +29,7 @@ def update_enrollment_progress(student, core_course):
     # Link: CertificationCourse.core_course == core_course
     try:
         cert_course = CertificationCourse.objects.get(core_course=core_course)
-        enrollment = CourseEnrollment.objects.get(student=student, course=cert_course)
+        enrollment = CourseEnrollment.objects.get(student=student, course=core_course)
         
         if enrollment.is_manually_modified:
             return  # Skip auto-update

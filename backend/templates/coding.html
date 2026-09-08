@@ -24,7 +24,7 @@
 
 <!-- Coding Courses Grid -->
 <section class="py-16 bg-white min-h-screen"
-    x-data="{ courses: [], loading: true }" x-init="fetch('http://127.0.0.1:8000/api/courses/?category=CODING')
+    x-data="{ courses: [], loading: true }" x-init="fetch('/api/courses/?category=CODING')
         .then(response => response.json())
         .then(data => { courses = data; loading = false; })
         .catch(error => { console.error('Error:', error); loading = false; })">

@@ -221,7 +221,7 @@
             const text = `Hi, I'm interested in the ${course.title}. Please share payment details and further information.`;
             return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
         }
-    }" x-init="fetch('http://127.0.0.1:8000/api/courses/')
+    }" x-init="fetch('/api/courses/')
         .then(response => response.json())
         .then(data => courses = data)">
     
