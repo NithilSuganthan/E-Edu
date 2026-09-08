@@ -1,0 +1,1234 @@
+{% extends 'student_base.html' %}
+
+{% block title %}Coding Lab | Inventobots{% endblock %}
+{% block header_title %}Coding Lab{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Circuit Styles */
+    .component-box {
+        transition: all 0.3s ease;
+    }
+
+    .component-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .led-on {
+        background-color: #ff3333 !important;
+        box-shadow: 0 0 20px #ff3333;
+    }
+
+    .motor-spin {
+        animation: spin 0.5s linear infinite;
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Abacus Styles */
+    .bead {
+        width: 60px;
+        height: 30px;
+        background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%);
+        border-radius: 15px;
+        margin: 2px auto;
+        cursor: pointer;
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .bead:hover {
+        filter: brightness(1.1);
+    }
+
+    .bead.active-heaven {
+        transform: translateY(40px);
+    }
+
+    .bead.active-earth {
+        transform: translateY(-40px);
+    }
+
+    .rod {
+        width: 6px;
+        background: #475569;
+        position: absolute;
+        height: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        border-radius: 3px;
+    }
+
+    /* Card Game 3D Flip */
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+
+    .preserve-3d {
+        transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto pt-6 relative min-h-[500px]" x-data="studentLabData()" x-init="init()">
+
+    <!-- Back Button (Visible when inside a tool) -->
+    <div x-show="activeTab" class="mb-6" x-transition>
+        <button @click="activeTab = null"
+            class="flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-medium transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Lab
+        </button>
+    </div>
+
+    <!-- Content Wrapper -->
+    <div
+        class="{% if is_locked %}filter blur-sm select-none pointer-events-none opacity-50 transition-all duration-500{% endif %}">
+
+        <!-- Dashboard Grid (Default View) -->
+        <div x-show="!activeTab" x-transition>
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Welcome to the Lab</h2>
+                <p class="text-slate-500 dark:text-slate-400">Access your unlocked tools and start building.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Python Compiler -->
+                <div @click="activeTab = 'code'"
+                    class="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div
+                        class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="code-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Python Compiler</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Write, run, and debug Python code directly in
+                        your browser.</p>
+                </div>
+
+                <!-- Circuit Simulator -->
+                <div @click="activeTab = 'circuit'"
+                    class="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div
+                        class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="cpu" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Circuit Simulator</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Design and test electronic circuits virtually.
+                    </p>
+                </div>
+
+                <!-- Virtual Abacus -->
+                <div @click="activeTab = 'abacus'"
+                    class="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div
+                        class="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="calculator" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Virtual Abacus</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Master mental math with our interactive
+                        abacus.</p>
+                </div>
+
+                <!-- Memory Games -->
+                <div @click="activeTab = 'memory'"
+                    class="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div
+                        class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Memory Games</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Boost your cognitive skills with brain
+                        training games.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. Code Studio -->
+        <div x-show="activeTab === 'code'"
+            class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col md:flex-row h-[600px] relative"
+            x-transition>
+            <!-- Sidebar -->
+            <div class="w-full md:w-64 bg-slate-800 p-6 border-r border-slate-700 flex flex-col">
+                <h3 class="text-slate-400 font-bold uppercase text-xs mb-4">Select Language</h3>
+                <div class="space-y-2">
+                    <template x-for="lang in languages">
+                        <button @click="setLanguage(lang.id)"
+                            :class="currentLang.id === lang.id ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'"
+                            class="w-full text-left px-4 py-3 rounded-lg font-mono text-sm transition-all"
+                            x-text="lang.name"></button>
+                    </template>
+                </div>
+                <div class="mt-auto">
+                    <button @click="runCode()"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-bold shadow-lg shadow-green-900/50 flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="play" class="w-5 h-5"></i> Run Code
+                    </button>
+                </div>
+            </div>
+            <!-- Editor -->
+            <div class="flex-1 flex flex-col">
+                <div class="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center">
+                    <div class="text-slate-400 text-sm font-mono flex items-center gap-2">
+                        <i data-lucide="file-code" class="w-4 h-4"></i>
+                        <span x-text="currentLang.filename"></span>
+                    </div>
+                    <div class="text-xs text-slate-500">Live Editor</div>
+                </div>
+                <div class="flex-1 relative">
+                    <textarea
+                        class="w-full h-full bg-slate-900 text-slate-300 font-mono p-6 resize-none focus:outline-none leading-relaxed text-sm"
+                        x-model="codeContent" spellcheck="false"></textarea>
+                </div>
+                <!-- Console -->
+                <div class="h-40 bg-black border-t border-slate-700 p-4 font-mono text-sm overflow-y-auto">
+                    <div class="text-slate-500 text-xs uppercase mb-2">Terminal Output</div>
+                    <div class="text-green-400" x-html="output"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Circuit Lab -->
+        <div x-show="activeTab === 'circuit'"
+            class="bg-slate-50 dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden min-h-[650px] flex flex-col md:flex-row relative"
+            x-transition>
+            <!-- Toolkit -->
+            <div
+                class="w-full md:w-64 bg-white dark:bg-slate-900 p-4 border-r border-slate-200 dark:border-slate-700 overflow-y-auto max-h-[650px] z-20 shadow-md">
+                <h3 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2"><i data-lucide="box"
+                        class="w-5 h-5"></i> Components</h3>
+                <div class="space-y-6">
+                    <!-- Power -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Power & Output</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'battery9v')">
+                                <i data-lucide="battery" class="mx-auto mb-1 text-orange-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">9V Battery</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'battery5v')">
+                                <i data-lucide="battery-low" class="mx-auto mb-1 text-yellow-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">5V Battery</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'led_red')">
+                                <i data-lucide="lightbulb" class="mx-auto mb-1 text-red-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Red LED</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'led_rgb')">
+                                <i data-lucide="aperture" class="mx-auto mb-1 text-purple-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">RGB LED</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'motor_dc')">
+                                <i data-lucide="fan" class="mx-auto mb-1 text-slate-700 dark:text-slate-400"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">DC Motor</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'buzzer')">
+                                <i data-lucide="volume-2" class="mx-auto mb-1 text-slate-700 dark:text-slate-400"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Buzzer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Switches -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Controls</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true"
+                                ondragstart="event.dataTransfer.setData('text/plain', 'switch_toggle')">
+                                <i data-lucide="toggle-left" class="mx-auto mb-1 text-blue-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Switch</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'push_button')">
+                                <i data-lucide="disc" class="mx-auto mb-1 text-red-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Button</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'resistor')">
+                                <i data-lucide="minus-square"
+                                    class="mx-auto mb-1 text-slate-500 dark:text-slate-400"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Resistor</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true"
+                                ondragstart="event.dataTransfer.setData('text/plain', 'potentiometer')">
+                                <i data-lucide="settings" class="mx-auto mb-1 text-slate-500 dark:text-slate-400"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Potetiometer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sensors -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Sensors (Lvl 2)</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'sensor_ldr')">
+                                <i data-lucide="sun" class="mx-auto mb-1 text-yellow-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">LDR</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true"
+                                ondragstart="event.dataTransfer.setData('text/plain', 'sensor_ultrasonic')">
+                                <i data-lucide="wifi" class="mx-auto mb-1 text-blue-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Ultrasonic</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'sensor_ir')">
+                                <i data-lucide="scan" class="mx-auto mb-1 text-green-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">IR Sensor</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'sensor_temp')">
+                                <i data-lucide="thermometer" class="mx-auto mb-1 text-red-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">Temp (LM35)</span>
+                            </div>
+                            <div class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing text-center"
+                                draggable="true" ondragstart="event.dataTransfer.setData('text/plain', 'sensor_pir')">
+                                <i data-lucide="eye" class="mx-auto mb-1 text-purple-500"></i>
+                                <span class="text-xs font-medium dark:text-slate-300">PIR Sensor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-xs text-blue-700 dark:text-blue-300">
+                    <p class="font-bold mb-1">How to use:</p>
+                    <ol class="list-decimal pl-4 space-y-1">
+                        <li>Drag components to board</li>
+                        <li>Click a Pin to start wire</li>
+                        <li>Click another Pin to connect</li>
+                        <li>Click toggle switches to interact</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- Bench -->
+            <div class="flex-1 bg-slate-100 dark:bg-slate-800/50 relative overflow-hidden" id="circuit-workbench"></div>
+        </div>
+
+        <!-- 3. Virtual Abacus -->
+        <div x-show="activeTab === 'abacus'"
+            class="bg-amber-50 dark:bg-amber-900/10 rounded-3xl shadow-xl border border-amber-200 dark:border-amber-900/50 p-8 min-h-[600px] flex flex-col items-center justify-center relative"
+            x-transition>
+            <h3 class="text-2xl font-bold text-amber-900 dark:text-amber-500 mb-8">Abacus Simulator</h3>
+            <div class="bg-slate-800 p-4 rounded-xl shadow-2xl border-4 border-amber-800 inline-block relative">
+                <div class="flex gap-4 bg-slate-700 p-4 rounded-lg relative overflow-hidden">
+                    <div
+                        class="absolute top-[90px] left-0 w-full h-4 bg-slate-900 z-20 border-t border-b border-slate-600">
+                    </div>
+                    <template x-for="col in 13">
+                        <div class="relative w-[70px] h-[300px] flex flex-col items-center justify-between py-2">
+                            <div class="rod"></div>
+                            <div class="mb-8 z-10 flex flex-col gap-1">
+                                <div class="bead" @click="toggleBead($event)" data-val="5" data-heaven></div>
+                            </div>
+                            <div class="mt-4 z-10 flex flex-col gap-1 justify-end h-full">
+                                <template x-for="i in 4">
+                                    <div class="bead" @click="toggleBead($event)" data-val="1" data-earth></div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <p class="mt-8 text-amber-700 italic">Click beads to move them towards the beam (activate).</p>
+        </div>
+
+        <!-- 4. Memory Games --> <!-- Placeholder for Memory (Simplification to verify flow first) -->
+        <!-- 4. Memory Games -->
+        <div x-show="activeTab === 'memory'"
+            class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-pink-100 dark:border-pink-900/20 min-h-[600px] p-6 relative"
+            x-data="{ activeGame: null }" x-transition>
+
+            <!-- Game Hub (Menu) -->
+            <div x-show="!activeGame" class="h-full flex flex-col">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Brain Training Games</h2>
+                    <p class="text-slate-500 dark:text-slate-400">Challenge your memory and logic skills.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
+                    <!-- Game 1: Card Match -->
+                    <div @click="activeGame = 'card'"
+                        class="group bg-slate-50 dark:bg-slate-700/50 p-4 md:p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-pink-500 dark:hover:border-pink-500 cursor-pointer transition-all hover:shadow-xl flex items-center gap-4 md:gap-6">
+                        <div
+                            class="p-3 md:p-4 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="copy" class="w-6 h-6 md:w-8 md:h-8"></i>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-slate-800 dark:text-white mb-1 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
+                                Card Match</h3>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Flip cards to find matching
+                                pairs
+                                before time runs out.</p>
+                        </div>
+                    </div>
+
+                    <!-- Game 2: Number Sequence -->
+                    <div @click="activeGame = 'number'"
+                        class="group bg-slate-50 dark:bg-slate-700/50 p-4 md:p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 cursor-pointer transition-all hover:shadow-xl flex items-center gap-4 md:gap-6">
+                        <div
+                            class="p-3 md:p-4 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="binary" class="w-6 h-6 md:w-8 md:h-8"></i>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-slate-800 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                Number Sequence</h3>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Memorize and type the
+                                sequence of
+                                numbers shown.</p>
+                        </div>
+                    </div>
+
+                    <!-- Game 3: Pattern Grid -->
+                    <div @click="activeGame = 'pattern'"
+                        class="group bg-slate-50 dark:bg-slate-700/50 p-4 md:p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-violet-500 dark:hover:border-violet-500 cursor-pointer transition-all hover:shadow-xl flex items-center gap-4 md:gap-6">
+                        <div
+                            class="p-3 md:p-4 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="grid-3x3" class="w-6 h-6 md:w-8 md:h-8"></i>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-slate-800 dark:text-white mb-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                Pattern Grid</h3>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Recall the highlighted
+                                boxes in the
+                                grid.</p>
+                        </div>
+                    </div>
+
+                    <!-- Game 4: Simon Says -->
+                    <div @click="activeGame = 'simon'"
+                        class="group bg-slate-50 dark:bg-slate-700/50 p-4 md:p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-green-500 dark:hover:border-green-500 cursor-pointer transition-all hover:shadow-xl flex items-center gap-4 md:gap-6">
+                        <div
+                            class="p-3 md:p-4 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="music" class="w-6 h-6 md:w-8 md:h-8"></i>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-slate-800 dark:text-white mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                                Simon Says</h3>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Repeat the color sequence
+                                with sound
+                                effects.</p>
+                        </div>
+                    </div>
+
+                    <!-- Game 5: Number Location -->
+                    <div @click="activeGame = 'location'"
+                        class="group bg-slate-50 dark:bg-slate-700/50 p-4 md:p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500 cursor-pointer transition-all hover:shadow-xl flex items-center gap-4 md:gap-6 md:col-span-2 lg:col-span-1">
+                        <div
+                            class="p-3 md:p-4 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="crosshair" class="w-6 h-6 md:w-8 md:h-8"></i>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-slate-800 dark:text-white mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                Number Location</h3>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Click the hidden numbers in
+                                ascending
+                                order (1, 2, 3...).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button for Games -->
+            <button x-show="activeGame" @click="activeGame = null"
+                class="absolute top-6 left-6 flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-medium transition-colors z-10">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Games
+            </button>
+
+            <!-- Game Containers -->
+            <div x-show="activeGame === 'card'" class="h-full pt-4"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" x-data="{
+                    cards: [],
+                    flippedCards: [],
+                    matchedPairs: 0,
+                    start: false,
+                    timer: 0,
+                    timerInterval: null,
+                    moves: 0,
+                    icons: ['ghost', 'heart', 'star', 'moon', 'sun', 'cloud', 'zap', 'anchor'],
+                    
+                    initCardGame() {
+                        this.start = true;
+                        this.timer = 0;
+                        this.moves = 0;
+                        this.matchedPairs = 0;
+                        this.flippedCards = [];
+                        clearInterval(this.timerInterval);
+                        
+                        // Create pairs
+                        let gameIcons = [...this.icons, ...this.icons];
+                        // Shuffle
+                        gameIcons.sort(() => Math.random() - 0.5);
+                        
+                        this.cards = gameIcons.map((icon, index) => ({
+                            id: index,
+                            icon: icon,
+                            flipped: false,
+                            matched: false
+                        }));
+                        
+                        this.timerInterval = setInterval(() => { this.timer++; }, 1000);
+                        
+                        // Render icons
+                        this.$nextTick(() => {
+                            lucide.createIcons();
+                        });
+                    },
+                    
+                    flipCard(card) {
+                        if (!this.start || card.flipped || card.matched || this.flippedCards.length >= 2) return;
+                        
+                        card.flipped = true;
+                        this.flippedCards.push(card);
+                        
+                        if (this.flippedCards.length === 2) {
+                            this.moves++;
+                            this.checkMatch();
+                        }
+                    },
+                    
+                    checkMatch() {
+                        const [card1, card2] = this.flippedCards;
+                        
+                        if (card1.icon === card2.icon) {
+                            card1.matched = true;
+                            card2.matched = true;
+                            this.matchedPairs++;
+                            this.flippedCards = [];
+                            
+                            if (this.matchedPairs === 8) {
+                                clearInterval(this.timerInterval);
+                                // Win state is just visible when matchedPairs == 8
+                            }
+                        } else {
+                            setTimeout(() => {
+                                card1.flipped = false;
+                                card2.flipped = false;
+                                this.flippedCards = [];
+                            }, 1000);
+                        }
+                    },
+                    
+                    formatTime(seconds) {
+                        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                        const s = (seconds % 60).toString().padStart(2, '0');
+                        return `${m}:${s}`;
+                    }
+                }"
+                x-init="$watch('activeGame', value => { if(value === 'card') initCardGame(); else { clearInterval(timerInterval); start=false; } })">
+
+                <div class="max-w-4xl mx-auto flex flex-col items-center">
+                    <!-- Header -->
+                    <div class="flex justify-between w-full mb-6 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold dark:text-white">Card Matching</h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Find all 8 pairs!</p>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-lg">
+                                <span
+                                    class="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase block">Time</span>
+                                <span class="text-xl font-mono font-bold text-slate-800 dark:text-white"
+                                    x-text="formatTime(timer)">00:00</span>
+                            </div>
+                            <div class="bg-purple-100 dark:bg-purple-900/30 px-4 py-2 rounded-lg">
+                                <span
+                                    class="text-xs text-purple-600 dark:text-purple-400 font-bold uppercase block">Moves</span>
+                                <span class="text-xl font-mono font-bold text-slate-800 dark:text-white"
+                                    x-text="moves">0</span>
+                            </div>
+                            <button @click="initCardGame()"
+                                class="bg-slate-200 dark:bg-slate-700 p-3 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5 dark:text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Grid -->
+                    <div class="grid grid-cols-4 gap-4 w-full max-w-md md:max-w-lg aspect-square">
+                        <template x-for="card in cards" :key="card.id">
+                            <div @click="flipCard(card)"
+                                class="relative w-full h-full cursor-pointer perspective-1000 group">
+                                <div class="w-full h-full relative preserve-3d transition-transform duration-500"
+                                    :class="(card.flipped || card.matched) ? 'rotate-y-180' : ''">
+                                    <!-- Front (Back of card) -->
+                                    <div
+                                        class="absolute w-full h-full bg-slate-800 dark:bg-slate-700 rounded-xl flex items-center justify-center backface-hidden shadow-md border-2 border-slate-700 dark:border-slate-600 group-hover:-translate-y-1 transition-transform">
+                                        <i data-lucide="help-circle"
+                                            class="text-slate-600 dark:text-slate-500 w-8 h-8 opacity-50"></i>
+                                    </div>
+                                    <!-- Back (Front of card/Icon) -->
+                                    <div class="absolute w-full h-full bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center backface-hidden rotate-y-180 shadow-md border-2"
+                                        :class="card.matched ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-blue-500 array-bg'">
+                                        <i :data-lucide="card.icon" class="w-8 h-8"
+                                            :class="card.matched ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Win Message -->
+                    <div x-show="matchedPairs === 8"
+                        class="mt-8 text-center bg-green-100 dark:bg-green-900/30 p-6 rounded-2xl border border-green-200 dark:border-green-900 animate-bounce-in">
+                        <h4 class="text-2xl font-bold text-green-700 dark:text-green-400 mb-2">Victory! 🎉</h4>
+                        <p class="text-slate-600 dark:text-slate-300">You cleared the board in <span
+                                x-text="moves"></span> moves!</p>
+                        <button @click="initCardGame()"
+                            class="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition shadow-lg shadow-green-900/20">
+                            Play Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="activeGame === 'number'" class="h-full pt-4"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" x-data="{
+                    level: 1,
+                    sequence: '',
+                    userInput: '',
+                    status: 'idle', // idle, displaying, input, success, failure
+                    message: 'Ready to start?',
+                    
+                    initNumberGame() {
+                        this.level = 1;
+                        this.status = 'idle';
+                        this.message = 'Ready to start?';
+                        this.startLevel();
+                    },
+                    
+                    startLevel() {
+                        this.userInput = '';
+                        this.status = 'displaying';
+                        this.message = `Level ${this.level}: Memorize this!`;
+                        
+                        // Generate random number sequence (Length = Level + 2)
+                        const length = this.level + 2;
+                        this.sequence = '';
+                        for(let i=0; i<length; i++) {
+                            this.sequence += Math.floor(Math.random() * 10);
+                        }
+                        
+                        // Show for 3 seconds + 0.5s per level
+                        const showTime = 2000 + (this.level * 500);
+                        
+                        setTimeout(() => {
+                            this.status = 'input';
+                            this.message = 'What was the number?';
+                            // Focus input automatically
+                            this.$nextTick(() => this.$refs.numInput.focus());
+                        }, showTime);
+                    },
+                    
+                    checkAnswer() {
+                        if (this.userInput === this.sequence) {
+                            this.status = 'success';
+                            this.message = 'Correct! Next level coming...';
+                            setTimeout(() => {
+                                this.level++;
+                                this.startLevel();
+                            }, 1500);
+                        } else {
+                            this.status = 'failure';
+                            this.message = `Game Over! The number was ${this.sequence}`;
+                        }
+                    }
+                }" x-init="$watch('activeGame', value => { if(value === 'number') initNumberGame() })">
+
+                <div class="max-w-2xl mx-auto flex flex-col items-center justify-center h-full min-h-[400px]">
+                    <!-- Status Header -->
+                    <div class="mb-8 text-center">
+                        <span
+                            class="inline-block px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold uppercase mb-2">
+                            Level <span x-text="level"></span>
+                        </span>
+                        <h3 class="text-3xl font-bold dark:text-white" x-text="message"></h3>
+                    </div>
+
+                    <!-- Display Phase -->
+                    <div x-show="status === 'displaying'" class="mb-12">
+                        <div
+                            class="text-6xl md:text-8xl font-mono font-bold tracking-widest text-blue-600 dark:text-blue-400 animate-pulse">
+                            <span x-text="sequence"></span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 mt-8 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500 animate-progress origin-left"
+                                :style="`animation-duration: ${2000 + (level * 500)}ms`"></div>
+                        </div>
+                    </div>
+
+                    <!-- Input Phase -->
+                    <div x-show="status === 'input'" class="w-full max-w-md">
+                        <form @submit.prevent="checkAnswer()" class="flex flex-col gap-4">
+                            <input x-ref="numInput" type="number" x-model="userInput"
+                                class="w-full text-center text-4xl font-mono p-4 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 focus:outline-none transition-colors placeholder:text-slate-300"
+                                placeholder="Type sequence..." autocomplete="off">
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95">
+                                Submit Answer
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- idle Phase -->
+                    <div x-show="status === 'idle'" class="text-center">
+                        <button @click="startLevel()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-4 px-10 rounded-2xl transition-all shadow-xl shadow-blue-900/20 hover:scale-105 active:scale-95">
+                            Start Game
+                        </button>
+                    </div>
+
+                    <!-- Failure Phase -->
+                    <div x-show="status === 'failure'" class="text-center">
+                        <div class="text-red-500 mb-6">
+                            <i data-lucide="x-circle" class="w-16 h-16 mx-auto"></i>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-400 mb-6">You reached Level <span x-text="level"
+                                class="font-bold"></span></p>
+                        <button @click="initNumberGame()"
+                            class="bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-3 px-8 rounded-xl transition-all">
+                            Try Again
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div x-show="activeGame === 'pattern'" class="h-full pt-4"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" x-data="{
+                    level: 1,
+                    gridSize: 3,
+                    pattern: [],
+                    userSelection: [],
+                    status: 'idle', // idle, displaying, input, success, failure
+                    message: 'Watch the pattern',
+                    score: 0,
+                    
+                    initPatternGame() {
+                        this.level = 1;
+                        this.score = 0;
+                        this.gridSize = 3;
+                        this.status = 'idle';
+                        this.message = 'Watch the pattern';
+                    },
+                    
+                    startGame() {
+                        this.level = 1;
+                        this.score = 0;
+                        this.startLevel();
+                    },
+                    
+                    startLevel() {
+                        this.userSelection = [];
+                        this.status = 'displaying';
+                        this.message = `Level ${this.level}`;
+                        
+                        // Increase grid size at level 5
+                        if (this.level >= 5) this.gridSize = 4;
+                        if (this.level >= 10) this.gridSize = 5;
+                        
+                        // Pattern length = Level + 2
+                        const count = this.level + 2;
+                        const maxCells = this.gridSize * this.gridSize;
+                        
+                        // Generate unique random cells
+                        const newPattern = new Set();
+                        while(newPattern.size < Math.min(count, maxCells - 1)) {
+                            newPattern.add(Math.floor(Math.random() * maxCells));
+                        }
+                        this.pattern = Array.from(newPattern);
+                        
+                        // Show for 2 seconds
+                        setTimeout(() => {
+                            this.status = 'input';
+                            this.message = 'Repeat the pattern';
+                        }, 2000); 
+                    },
+                    
+                    handleCellClick(index) {
+                        if (this.status !== 'input') return;
+                        
+                        // Toggle logic or strict sequence? Pattern Match usually just means 'select the ones that were lit'
+                        // If it's unique set, order doesn't matter. If users confuse it with Simon, order matters.
+                        // Let's implement 'Set Match' (order doesn't matter) for Pattern Grid usually.
+                        
+                        if (this.pattern.includes(index)) {
+                            // Correct cell
+                            if (!this.userSelection.includes(index)) {
+                                this.userSelection.push(index);
+                                
+                                // Check if complete
+                                if (this.userSelection.length === this.pattern.length) {
+                                    this.status = 'success';
+                                    this.score += this.level * 10;
+                                    setTimeout(() => {
+                                        this.level++;
+                                        this.startLevel();
+                                    }, 1000);
+                                }
+                            }
+                        } else {
+                            // Wrong cell
+                            this.status = 'failure';
+                            this.message = 'Game Over!';
+                        }
+                    },
+                    
+                    isCellActive(index) {
+                        if (this.status === 'displaying') return this.pattern.includes(index);
+                        if (this.status === 'success') return this.pattern.includes(index);
+                        if (this.status === 'input') return this.userSelection.includes(index);
+                        if (this.status === 'failure' && this.pattern.includes(index)) return true; // Show missed pattern
+                        return false;
+                    }
+                }" x-init="$watch('activeGame', value => { if(value === 'pattern') initPatternGame() })">
+
+                <div class="h-full flex flex-col items-center justify-center max-w-lg mx-auto">
+
+                    <div class="flex justify-between w-full mb-8 items-end">
+                        <div>
+                            <h3 class="text-3xl font-bold dark:text-white mb-2">Pattern Grid</h3>
+                            <p class="text-slate-500 dark:text-slate-400" x-text="message"></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs uppercase font-bold text-slate-400 block">Score</span>
+                            <span class="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400"
+                                x-text="score">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid Board -->
+                    <div class="grid gap-3 p-4 bg-slate-200 dark:bg-slate-700 rounded-2xl shadow-inner transition-all duration-300"
+                        :style="`grid-template-columns: repeat(${gridSize}, 1fr); aspect-ratio: 1/1; width: 100%; max-width: 400px;`">
+                        <template x-for="i in (gridSize * gridSize)">
+                            <div @click="handleCellClick(i-1)"
+                                class="rounded-xl cursor-pointer transition-all duration-200 shadow-sm hover:scale-95 active:scale-90"
+                                :class="isCellActive(i-1) ? 'bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)] scale-95' : 'bg-white dark:bg-slate-600 hover:bg-slate-50 dark:hover:bg-slate-500'">
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="mt-8">
+                        <template x-if="status === 'idle'">
+                            <button @click="startGame()"
+                                class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+                                <i data-lucide="play" class="w-5 h-5"></i> Start
+                            </button>
+                        </template>
+
+                        <template x-if="status === 'failure'">
+                            <button @click="startGame()"
+                                class="bg-slate-800 hover:bg-slate-900 border border-slate-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Try Again
+                            </button>
+                        </template>
+                    </div>
+
+                </div>
+            </div>
+
+            <div x-show="activeGame === 'simon'" class="h-full pt-4"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" x-data="{
+                    sequence: [], // 0: Green, 1: Red, 2: Yellow, 3: Blue
+                    userStep: 0,
+                    status: 'idle', // idle, playing, input, failure
+                    activeBtn: null,
+                    score: 0,
+                    
+                    colors: [
+                        { id: 0, color: 'bg-green-500', active: 'bg-green-300 shadow-[0_0_30px_#4ade80]', sound: 261.63 },
+                        { id: 1, color: 'bg-red-500', active: 'bg-red-300 shadow-[0_0_30px_#f87171]', sound: 329.63 },
+                        { id: 2, color: 'bg-yellow-400', active: 'bg-yellow-200 shadow-[0_0_30px_#facc15]', sound: 392.00 },
+                        { id: 3, color: 'bg-blue-500', active: 'bg-blue-300 shadow-[0_0_30px_#60a5fa]', sound: 523.25 }
+                    ],
+                    
+                    initSimon() {
+                        this.status = 'idle';
+                        this.score = 0;
+                        this.sequence = [];
+                        this.activeBtn = null;
+                        this.message = 'Watch the lights!';
+                    },
+                    
+                    startGame() {
+                        this.sequence = [];
+                        this.score = 0;
+                        this.status = 'idle';
+                        this.nextRound();
+                    },
+                    
+                    nextRound() {
+                        this.status = 'playing';
+                        this.userStep = 0;
+                        this.message = 'Listen & Watch...';
+                        
+                        // Add random step
+                        this.sequence.push(Math.floor(Math.random() * 4));
+                        
+                        // Play sequence
+                        let delay = 500;
+                        this.sequence.forEach((btnIndex, i) => {
+                            setTimeout(() => {
+                                this.flashButton(btnIndex);
+                            }, delay);
+                            delay += 800; // Gap between flashes
+                        });
+                        
+                        setTimeout(() => {
+                            this.status = 'input';
+                            this.message = 'Your turn!';
+                        }, delay);
+                    },
+                    
+                    flashButton(index) {
+                        this.activeBtn = index;
+                        // this.playSound(this.colors[index].sound); // Sound optional for MVP
+                        setTimeout(() => {
+                            this.activeBtn = null;
+                        }, 400);
+                    },
+                    
+                    handleInput(index) {
+                        if (this.status !== 'input') return;
+                        
+                        // Interaction feedback
+                        this.flashButton(index);
+                        
+                        if (index === this.sequence[this.userStep]) {
+                            // Correct
+                            this.userStep++;
+                            
+                            if (this.userStep >= this.sequence.length) {
+                                // Round complete
+                                this.score++;
+                                this.status = 'success';
+                                setTimeout(() => {
+                                    this.nextRound();
+                                }, 1000);
+                            }
+                        } else {
+                            // Wrong
+                            this.status = 'failure';
+                            this.message = 'Game Over!';
+                        }
+                    }
+                }" x-init="$watch('activeGame', value => { if(value === 'simon') initSimon() })">
+
+                <div class="h-full flex flex-col items-center justify-center max-w-lg mx-auto">
+
+                    <div class="text-center mb-8">
+                        <h3 class="text-3xl font-bold dark:text-white mb-2">Simon Says</h3>
+                        <p class="text-slate-500 dark:text-slate-400 font-mono text-lg" x-text="message"></p>
+                    </div>
+
+                    <!-- Game Board -->
+                    <div
+                        class="relative w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden shadow-2xl bg-slate-800 border-8 border-slate-700">
+
+                        <!-- Quadrants -->
+                        <div class="grid grid-cols-2 grid-rows-2 h-full w-full">
+                            <!-- Green (Top Left) -->
+                            <div @click="handleInput(0)"
+                                class="cursor-pointer transition-all duration-100 border-r-4 border-b-4 border-slate-800 hover:opacity-90 active:scale-95 origin-bottom-right"
+                                :class="activeBtn === 0 ? colors[0].active : colors[0].color"></div>
+
+                            <!-- Red (Top Right) -->
+                            <div @click="handleInput(1)"
+                                class="cursor-pointer transition-all duration-100 border-l-4 border-b-4 border-slate-800 hover:opacity-90 active:scale-95 origin-bottom-left"
+                                :class="activeBtn === 1 ? colors[1].active : colors[1].color"></div>
+
+                            <!-- Yellow (Bottom Left) -->
+                            <div @click="handleInput(2)"
+                                class="cursor-pointer transition-all duration-100 border-r-4 border-t-4 border-slate-800 hover:opacity-90 active:scale-95 origin-top-right"
+                                :class="activeBtn === 2 ? colors[2].active : colors[2].color"></div>
+
+                            <!-- Blue (Bottom Right) -->
+                            <div @click="handleInput(3)"
+                                class="cursor-pointer transition-all duration-100 border-l-4 border-t-4 border-slate-800 hover:opacity-90 active:scale-95 origin-top-left"
+                                :class="activeBtn === 3 ? colors[3].active : colors[3].color"></div>
+                        </div>
+
+                        <!-- Center Control -->
+                        <div
+                            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/3 bg-slate-900 rounded-full border-8 border-slate-700 flex flex-col items-center justify-center z-10 shadow-xl">
+                            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Score</div>
+                            <div class="text-3xl font-mono font-bold text-white mb-2" x-text="score">0</div>
+
+                            <template x-if="status === 'idle' || status === 'failure'">
+                                <button @click="startGame()"
+                                    class="bg-slate-700 hover:bg-slate-600 text-white rounded-full p-2 transition">
+                                    <i data-lucide="play" class="w-6 h-6 ml-1"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div x-show="activeGame === 'location'" class="h-full pt-4"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" x-data="{
+                    level: 1,
+                    status: 'idle', // idle, displaying, input, success, failure
+                    message: 'Memorize positions',
+                    score: 0,
+                    gridSize: 5,
+                    numbers: [], // { id, pos, value, visible, found }
+                    nextExpected: 1,
+                    
+                    initLocationGame() {
+                        this.level = 1;
+                        this.score = 0;
+                        this.status = 'idle';
+                        this.message = 'Memorize positions';
+                        this.numbers = [];
+                    },
+                    
+                    startGame() {
+                        this.level = 1;
+                        this.score = 0;
+                        this.startLevel();
+                    },
+                    
+                    startLevel() {
+                        this.status = 'displaying';
+                        this.message = `Level ${this.level}`;
+                        this.nextExpected = 1;
+                        this.numbers = [];
+                        
+                        // Count = level + 2
+                        const count = this.level + 2;
+                        const maxCells = this.gridSize * this.gridSize;
+                        
+                        // Random unique positions
+                        const positions = new Set();
+                        while(positions.size < count) {
+                            positions.add(Math.floor(Math.random() * maxCells));
+                        }
+                        
+                        // Create number objects
+                        let i = 1;
+                        positions.forEach(pos => {
+                            this.numbers.push({
+                                id: i,
+                                pos: pos,
+                                value: i,
+                                visible: true, // Initially showing number
+                                found: false,
+                                masked: false  // Hidden behind white block logic
+                            });
+                            i++;
+                        });
+                        
+                        // Show for variable time based on count
+                        const showTime = 1000 + (count * 500); 
+                        
+                        setTimeout(() => {
+                            this.status = 'input';
+                            this.message = 'Click in order (1, 2, 3...)';
+                            // Mask all numbers
+                            this.numbers.forEach(n => n.masked = true);
+                        }, showTime);
+                    },
+                    
+                    handleCellClick(cellIndex) {
+                        if (this.status !== 'input') return;
+                        
+                        // Find number at this position
+                        const num = this.numbers.find(n => n.pos === cellIndex);
+                        
+                        if (num) {
+                            if (num.found) return; // Already clicked
+                            
+                            if (num.value === this.nextExpected) {
+                                // Correct!
+                                num.masked = false; // Reveal number
+                                num.found = true;
+                                this.nextExpected++;
+                                
+                                // Check completion
+                                if (this.nextExpected > this.numbers.length) {
+                                    this.status = 'success';
+                                    this.score += this.level * 10;
+                                    setTimeout(() => {
+                                        this.level++;
+                                        this.startLevel();
+                                    }, 1000);
+                                }
+                            } else {
+                                // Wrong order!
+                                this.status = 'failure';
+                                this.message = `Wrong! You clicked ${num.value}, expected ${this.nextExpected}`;
+                                // Reveal all to show mistake
+                                this.numbers.forEach(n => n.masked = false);
+                            }
+                        }
+                    },
+                    
+                    getCellValue(index) {
+                        const num = this.numbers.find(n => n.pos === index);
+                        if (!num) return null;
+                        return num;
+                    }
+                }" x-init="$watch('activeGame', value => { if(value === 'location') initLocationGame() })">
+
+                <div class="h-full flex flex-col items-center justify-center max-w-lg mx-auto">
+
+                    <div class="flex justify-between w-full mb-8 items-end">
+                        <div>
+                            <h3 class="text-3xl font-bold dark:text-white mb-2">Number Location</h3>
+                            <p class="text-slate-500 dark:text-slate-400" x-text="message"></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs uppercase font-bold text-slate-400 block">Score</span>
+                            <span class="text-2xl font-mono font-bold text-orange-600 dark:text-orange-400"
+                                x-text="score">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid Board -->
+                    <div class="grid gap-2 p-4 bg-slate-200 dark:bg-slate-700 rounded-2xl shadow-inner transition-all duration-300 relative"
+                        :style="`grid-template-columns: repeat(${gridSize}, 1fr); aspect-ratio: 1/1; width: 100%; max-width: 450px;`">
+
+                        <template x-for="i in (gridSize * gridSize)">
+                            <div @click="handleCellClick(i-1)"
+                                class="rounded-xl flex items-center justify-center text-2xl font-bold transition-all duration-200 relative select-none"
+                                :class="[
+                                     getCellValue(i-1) ? 'cursor-pointer' : '',
+                                     getCellValue(i-1) && !getCellValue(i-1).masked ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm' : '',
+                                     getCellValue(i-1) && getCellValue(i-1).masked ? 'bg-white dark:bg-slate-600 hover:bg-slate-50' : 'bg-transparent'
+                                 ]">
+
+                                <template x-if="getCellValue(i-1)">
+                                    <span x-show="!getCellValue(i-1).masked" x-text="getCellValue(i-1).value"></span>
+                                </template>
+
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="mt-8">
+                        <template x-if="status === 'idle'">
+                            <button @click="startGame()"
+                                class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+                                <i data-lucide="play" class="w-5 h-5"></i> Start
+                            </button>
+                        </template>
+
+                        <template x-if="status === 'failure'">
+                            <button @click="startGame()"
+                                class="bg-slate-800 hover:bg-slate-900 border border-slate-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Try Again
+                            </button>
+                        </template>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Lock Overlay (Only visible if is_locked) -->
+    {% if is_locked %}
+    <div class="absolute inset-0 flex items-center justify-center z-10">
+        <!-- Existing Lock Overlay Content -->
+        <div
+            class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-2xl text-center border border-white/20 dark:border-slate-700/50 max-w-md mx-4">
+            <div
+                class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <i data-lucide="lock" class="w-10 h-10 text-slate-400 dark:text-slate-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-3">Lab Access Locked</h2>
+            <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                Unlock the power of our Online Lab by enrolling in a course. Get hands-on experience with coding,
+                circuits, and more!
+            </p>
+            <a href="{% url 'parents:student_browse_courses' %}"
+                class="inline-flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-blue-600/30">
+                <i data-lucide="sparkles" class="w-5 h-5"></i> Enroll to Unlock
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/circuit-components.js?v=2"></script>
+<script src="/static/js/circuit-engine.js?v=2"></script>
+<script src="/static/js/circuit-ui.js?v=2"></script>
+<script src="/static/js/lab.js?v=5"></script>
+<script>
+    function studentLabData() {
+        return {
+            ...labData(), // Inherit all lab logic
+            activeTab: null, // Override to start at dashboard
+
+            init() {
+                // Initial setup if needed
+                this.setLanguage('python');
+                this.$watch('activeTab', value => {
+                    if (value === 'circuit') {
+                        setTimeout(() => this.initCircuit(), 100);
+                    }
+                });
+            },
+
+            initCircuit() {
+                const engine = new CircuitEngine();
+                if (document.getElementById('circuit-workbench')) {
+                    // Clear previous if any (simplified)
+                    document.getElementById('circuit-workbench').innerHTML = '';
+                    window.circuitApp = new CircuitUI('circuit-workbench', engine);
+                    // Demo
+                    engine.addComponent('battery9v', 50, 50);
+                    engine.addComponent('led_red', 250, 50);
+                    engine.addComponent('switch_toggle', 150, 50);
+                    window.circuitApp.render();
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,622 @@
+{% load core_extras %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title }} — Inventobots Academy</title>
+    <link rel="icon" href="/static/Logo.png">
+
+    <!-- Tailwind + Alpine + Lucide -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#151e2e', 950: '#020617' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/static/js/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Ambient glow effect */
+        .glow-blue {
+            box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.3);
+        }
+
+        .glow-green {
+            box-shadow: 0 0 40px -10px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Smooth lesson hover */
+        .lesson-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lesson-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Progress bar shimmer */
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .progress-shimmer {
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white overflow-hidden h-screen">
+
+    <div class="h-screen flex flex-col" x-data="coursePlayer({
+            completedLessons: {{ completed_lessons|default:0 }},
+            totalLessons: {{ total_lessons|default:0 }},
+            firstLesson: {% if first_lesson %}{
+                id: {{ first_lesson.id }},
+                type: '{{ first_lesson.lesson_type }}',
+                url: '{{ first_lesson.video_url|default:""|escapejs }}',
+                title: '{{ first_lesson.title|escapejs }}'
+            }{% else %}null{% endif %}
+         })" x-cloak>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- Top Navigation Bar -->
+        <!-- ═══════════════════════════════════════ -->
+        <div
+            class="h-14 bg-slate-900/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-30">
+            <!-- Left: Back + Breadcrumb -->
+            <div class="flex items-center gap-3 min-w-0">
+                <a href="{% url 'parents:student_dashboard' %}"
+                    class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group flex-shrink-0">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-sm font-medium hidden sm:inline">Dashboard</span>
+                </a>
+                <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="bg-blue-500/10 p-1.5 rounded-md flex-shrink-0">
+                        <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                    </div>
+                    <span class="text-sm text-slate-300 font-medium truncate">{{ course.title }}</span>
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Mark Complete Button -->
+                <button @click="markComplete()" x-show="currentLessonId"
+                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2" :class="isCompleted(currentLessonId) 
+                        ? 'bg-green-500/15 text-green-400 border border-green-500/30' 
+                        : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20'"
+                    style="display:none;">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                    <span x-text="isCompleted(currentLessonId) ? 'Completed' : 'Mark Complete'"></span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()"
+                    class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- Main Layout: Sidebar + Content -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="flex-1 flex overflow-hidden" x-data="{ sidebarOpen: true }">
+
+            <!-- Mobile Sidebar Toggle -->
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="md:hidden fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-blue-600 text-white shadow-xl shadow-blue-500/30 flex items-center justify-center hover:bg-blue-500 transition-all">
+                <i x-show="!sidebarOpen" data-lucide="panel-left" class="w-5 h-5"></i>
+                <i x-show="sidebarOpen" data-lucide="x" class="w-5 h-5" style="display:none;"></i>
+            </button>
+
+            <!-- ═══════════════════════════════════════ -->
+            <!-- Sidebar: Course Content -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="w-80 lg:w-96 bg-slate-900 border-r border-white/5 flex flex-col flex-shrink-0 transition-all duration-300 h-full"
+                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full absolute md:relative md:translate-x-0'"
+                style="z-index: 20;">
+
+                <!-- Course Info + Progress -->
+                <div class="p-5 border-b border-white/5 flex-shrink-0">
+                    <h2 class="font-bold text-lg leading-tight text-white mb-4 line-clamp-2">{{ course.title }}</h2>
+
+                    <!-- Progress Bar -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-semibold">
+                            <span class="text-slate-500 uppercase tracking-wider">Progress</span>
+                            <span class="tabular-nums"
+                                :class="progressPercentage === 100 ? 'text-green-400' : 'text-blue-400'">
+                                <span x-text="Math.round(progressPercentage)">0</span>%
+                            </span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700 ease-out relative"
+                                :class="progressPercentage === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-blue-600 to-blue-400'"
+                                :style="`width: ${progressPercentage}%`">
+                                <div class="absolute inset-0 progress-shimmer rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-600">
+                            <span><span x-text="completedLessons">0</span> of <span x-text="totalLessons">0</span>
+                                lessons</span>
+                            <span x-show="progressPercentage === 100"
+                                class="text-green-400 font-semibold flex items-center gap-1" style="display:none;">
+                                <i data-lucide="trophy" class="w-3 h-3"></i> Complete!
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrollable Content List -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+
+                    <!-- Debug Info (Hidden in Prod usually, but helpful now) -->
+                    {% if debug %}
+                    <!-- <div class="px-5 py-2 text-[10px] text-slate-500 uppercase">Debug: {{ course.study_materials.all.count }} materials</div> -->
+                    {% endif %}
+
+                    <!-- Study Materials Section -->
+                    {% if course.study_materials.all %}
+                    <div x-data="{ expanded: true }" class="border-b border-white/5">
+                        <button @click="expanded = !expanded"
+                            class="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                    <i data-lucide="folder-open" class="w-4 h-4 text-purple-400"></i>
+                                </div>
+                                <span class="text-sm font-bold text-slate-200 tracking-wide uppercase">Course
+                                    Materials</span>
+                            </div>
+                            <i data-lucide="chevron-down"
+                                class="w-4 h-4 text-slate-500 transition-transform duration-300"
+                                :class="expanded ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <div x-show="expanded" class="pb-2 space-y-0.5" x-collapse>
+                            {% for material in course.study_materials.all %}
+
+                            <!-- Header for groups of files or if it has a video -->
+                            {% if material.files.all.count > 1 or material.video_url %}
+                            <div
+                                class="px-5 py-1.5 text-[10px] font-semibold text-slate-600 uppercase tracking-widest mt-1 first:mt-0">
+                                {{ material.title }}
+                            </div>
+                            {% endif %}
+
+                            {% for file_obj in material.files.all %}
+                            <button
+                                @click="loadResource('PDF', '{{ file_obj.file.url }}', '{% if file_obj.description %}{{ file_obj.description|escapejs }}{% else %}{{ file_obj.file.name|cut:'study_materials/files/'|escapejs }}{% endif %}')"
+                                class="lesson-item w-full px-5 py-2.5 pl-7 flex items-center gap-3 transition-all group/file border-l-2 border-transparent"
+                                :class="currentPdfUrl === '{{ file_obj.file.url }}' ? 'border-purple-500 bg-purple-500/10' : 'hover:border-slate-700'">
+                                <div
+                                    class="w-6 h-6 rounded flex items-center justify-center bg-slate-800 group-hover/file:bg-slate-700 transition-colors">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400"></i>
+                                </div>
+                                <div class="text-left min-w-0">
+                                    <p
+                                        class="text-sm font-medium text-slate-400 group-hover/file:text-slate-200 transition-colors truncate">
+                                        {% if file_obj.description %}{{ file_obj.description }}{% else %}{{
+                                        file_obj.file.name|cut:'study_materials/files/' }}{% endif %}
+                                    </p>
+                                </div>
+                            </button>
+                            {% endfor %}
+
+                            <!-- Direct File (if any) -->
+                            {% if material.file %}
+                            <button
+                                @click="loadResource('PDF', '{{ material.file.url }}', '{{ material.title|escapejs }}')"
+                                class="lesson-item w-full px-5 py-2.5 pl-7 flex items-center gap-3 transition-all group/file border-l-2 border-transparent"
+                                :class="currentPdfUrl === '{{ material.file.url }}' ? 'border-purple-500 bg-purple-500/10' : 'hover:border-slate-700'">
+                                <div
+                                    class="w-6 h-6 rounded flex items-center justify-center bg-slate-800 group-hover/file:bg-slate-700 transition-colors">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400"></i>
+                                </div>
+                                <div class="text-left min-w-0">
+                                    <p
+                                        class="text-sm font-medium text-slate-400 group-hover/file:text-slate-200 transition-colors truncate">
+                                        {{ material.title }}
+                                    </p>
+                                </div>
+                            </button>
+                            {% endif %}
+
+                            {% if material.video_url %}
+                            <button
+                                @click="loadResource('VIDEO', '{{ material.video_url|escapejs }}', '{{ material.title|escapejs }}')"
+                                class="lesson-item w-full px-5 py-2.5 pl-7 flex items-center gap-3 transition-all group/file border-l-2 border-transparent"
+                                :class="currentVideoUrl === '{{ material.video_url }}' ? 'border-purple-500 bg-purple-500/10' : 'hover:border-slate-700'">
+                                <div
+                                    class="w-6 h-6 rounded flex items-center justify-center bg-slate-800 group-hover/file:bg-slate-700 transition-colors">
+                                    <i data-lucide="play-circle" class="w-3.5 h-3.5 text-slate-400"></i>
+                                </div>
+                                <div class="text-left min-w-0">
+                                    <p
+                                        class="text-sm font-medium text-slate-400 group-hover/file:text-slate-200 transition-colors truncate">
+                                        {{ material.title }} (Video)
+                                    </p>
+                                </div>
+                            </button>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Course Subjects & Modules -->
+                    {% for subject in course.subjects.all %}
+                    <div class="border-b border-white/5 last:border-b-0">
+                        <!-- Subject Header -->
+                        <div
+                            class="px-5 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-widest sticky top-0 bg-slate-900/95 backdrop-blur-md z-10 flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                            {{ subject.title }}
+                        </div>
+
+                        {% for module in subject.modules.all %}
+                        <div x-data="{ expanded: true }" class="group">
+                            <button @click="expanded = !expanded"
+                                class="w-full px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-all text-left cursor-pointer outline-none">
+                                <span
+                                    class="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">{{
+                                    module.title }}</span>
+                                <i data-lucide="chevron-down"
+                                    class="w-3.5 h-3.5 text-slate-600 transition-transform duration-300"
+                                    :class="{'rotate-180': expanded, 'text-blue-400': expanded}"></i>
+                            </button>
+
+                            <div x-show="expanded" class="pb-1" x-collapse>
+                                {% for lesson in module.lessons.all %}
+                                {% with progress=progress_map|get_item:lesson.id %}
+                                <button
+                                    @click="loadLesson({{ lesson.id }}, '{{ lesson.lesson_type }}', '{{ lesson.video_url|default:''|escapejs }}', '{{ lesson.title|escapejs }}')"
+                                    class="lesson-item w-full px-5 py-2.5 pl-7 flex items-center gap-3 relative border-l-2 transition-all"
+                                    :class="currentLessonId === {{ lesson.id }} 
+                                        ? 'border-blue-500 bg-blue-500/10' 
+                                        : 'border-transparent hover:border-slate-700'" data-lesson-id="{{ lesson.id }}"
+                                    data-completed="{% if progress.status == 'COMPLETED' %}true{% else %}false{% endif %}">
+
+                                    <!-- Status Icon -->
+                                    <div class="flex-shrink-0">
+                                        {% if progress.status == 'COMPLETED' %}
+                                        <div
+                                            class="w-7 h-7 rounded-md bg-green-500/15 flex items-center justify-center">
+                                            <i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i>
+                                        </div>
+                                        {% else %}
+                                        <div class="w-7 h-7 rounded-md flex items-center justify-center transition-colors"
+                                            :class="currentLessonId === {{ lesson.id }} ? 'bg-blue-500/20' : 'bg-white/5'">
+                                            {% if lesson.lesson_type == 'VIDEO' %}
+                                            <i data-lucide="play" class="w-3 h-3 transition-colors"
+                                                :class="currentLessonId === {{ lesson.id }} ? 'text-blue-400' : 'text-slate-500'"></i>
+                                            {% elif lesson.lesson_type == 'QUIZ' %}
+                                            <i data-lucide="help-circle" class="w-3 h-3 transition-colors"
+                                                :class="currentLessonId === {{ lesson.id }} ? 'text-blue-400' : 'text-purple-400'"></i>
+                                            {% else %}
+                                            <i data-lucide="file-text" class="w-3 h-3 transition-colors"
+                                                :class="currentLessonId === {{ lesson.id }} ? 'text-blue-400' : 'text-slate-500'"></i>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Lesson Info -->
+                                    <div class="flex-1 text-left min-w-0">
+                                        <div class="text-sm truncate transition-colors"
+                                            :class="currentLessonId === {{ lesson.id }} ? 'text-white font-medium' : 'text-slate-400'">
+                                            {{ lesson.title }}
+                                        </div>
+                                        <div
+                                            class="text-[10px] text-slate-600 flex items-center gap-2 mt-0.5 font-medium uppercase tracking-wide">
+                                            {% if lesson.lesson_type == 'VIDEO' %}
+                                            <span>Video{% if lesson.duration_minutes %} • {{ lesson.duration_minutes }}
+                                                min{% endif %}</span>
+                                            {% elif lesson.lesson_type == 'QUIZ' %}
+                                            <span class="text-purple-500">Quiz</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </button>
+                                {% endwith %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════ -->
+            <!-- Main Content Area -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="flex-1 flex flex-col bg-slate-950 relative overflow-hidden min-w-0">
+                <!-- Ambient Background -->
+                <div class="absolute inset-0 pointer-events-none">
+                    <div
+                        class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-500/[0.03] rounded-full blur-[120px]">
+                    </div>
+                    <div
+                        class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-500/[0.03] rounded-full blur-[120px]">
+                    </div>
+                </div>
+
+                <!-- Content Container -->
+                <div class="flex-1 overflow-y-auto p-4 lg:p-6 flex flex-col relative z-0 custom-scrollbar">
+
+                    <!-- Active Content View (Video/PDF) -->
+                    <div x-show="currentLessonId || currentType === 'PDF' || (currentType === 'VIDEO' && !currentLessonId)"
+                        class="w-full h-full flex flex-col gap-4" style="display: none;">
+
+                        <!-- Viewer Container -->
+                        <div class="w-full bg-slate-900/50 rounded-xl overflow-hidden border border-white/5 relative flex-1 flex flex-col min-h-[400px]"
+                            :class="currentType === 'VIDEO' ? 'glow-blue' : ''">
+
+                            <!-- Loading Spinner -->
+                            <div class="absolute inset-0 flex items-center justify-center bg-slate-900/80 -z-10">
+                                <div class="flex flex-col items-center gap-3">
+                                    <i data-lucide="loader-2" class="w-8 h-8 text-blue-500 animate-spin"></i>
+                                    <span class="text-xs text-slate-500">Loading content...</span>
+                                </div>
+                            </div>
+
+                            <!-- Video Player -->
+                            <template x-if="currentType === 'VIDEO' && currentVideoUrl">
+                                <div class="w-full h-full">
+                                    <iframe :src="getEmbedUrl(currentVideoUrl)" class="w-full h-full" frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen></iframe>
+                                </div>
+                            </template>
+
+                            <!-- PDF Viewer -->
+                            <template x-if="currentType === 'PDF' && currentPdfUrl">
+                                <iframe :src="currentPdfUrl" class="w-full flex-1 bg-white h-full block"
+                                    frameborder="0"></iframe>
+                            </template>
+
+                            <!-- No Content  -->
+                            <template x-if="!currentVideoUrl && !currentPdfUrl">
+                                <div class="flex flex-col items-center justify-center h-full text-slate-600 py-20">
+                                    <i data-lucide="file-question" class="w-10 h-10 mb-3 opacity-40"></i>
+                                    <p class="text-sm">Select content to view</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Lesson Title Bar -->
+                        <div class="bg-white/[0.03] border border-white/5 rounded-xl px-5 py-4 flex-shrink-0">
+                            <h2 class="text-lg font-bold text-white" x-text="currentLessonTitle"></h2>
+                            <p class="text-sm text-slate-500 mt-1">{{ course.title }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Welcome / Empty State -->
+                    <div x-show="!currentLessonId && !currentPdfUrl && currentType !== 'VIDEO'"
+                        class="w-full h-full flex flex-col items-center justify-center text-center p-8"
+                        style="display: none;">
+
+                        <!-- Animated Icon -->
+                        <div class="relative mb-8">
+                            <div class="w-20 h-20 rounded-2xl bg-blue-500/10 flex items-center justify-center rotate-3">
+                                <i data-lucide="play-circle" class="w-9 h-9 text-blue-400"></i>
+                            </div>
+                            <div
+                                class="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center -rotate-6">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-green-400"></i>
+                            </div>
+                        </div>
+
+                        <h1 class="text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight">
+                            Ready to learn?
+                        </h1>
+                        <p class="text-slate-500 text-base max-w-md mx-auto mb-8 leading-relaxed">
+                            Select a lesson from the sidebar to start <span class="text-slate-300 font-medium">{{
+                                course.title }}</span>.
+                        </p>
+
+                        <!-- Quick Stats -->
+                        <div class="flex items-center gap-6 mb-8">
+                            <div class="flex items-center gap-2 text-sm text-slate-500">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                                    <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+                                </div>
+                                <span><span x-text="totalLessons" class="text-white font-semibold">0</span>
+                                    Lessons</span>
+                            </div>
+                            <div class="w-px h-6 bg-white/10"></div>
+                            <div class="flex items-center gap-2 text-sm text-slate-500">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                                </div>
+                                <span><span x-text="completedLessons" class="text-white font-semibold">0</span>
+                                    Done</span>
+                            </div>
+                        </div>
+
+                        {% if first_lesson %}
+                        <button
+                            @click="loadLesson({{ first_lesson.id }}, '{{ first_lesson.lesson_type }}', '{{ first_lesson.video_url|default:''|escapejs }}', '{{ first_lesson.title|escapejs }}')"
+                            class="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2.5 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5">
+                            <i data-lucide="play" class="w-4 h-4"></i>
+                            Start Learning
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function coursePlayer(initialData) {
+            return {
+                currentLessonId: null,
+                currentType: null,
+                currentVideoUrl: null,
+                currentPdfUrl: null,
+                currentLessonTitle: 'Welcome',
+                completedLessons: initialData.completedLessons,
+                totalLessons: initialData.totalLessons,
+                progressPercentage: 0,
+
+                init() {
+                    this.calculateProgress();
+                    if (initialData.firstLesson) {
+                        this.loadLesson(
+                            initialData.firstLesson.id,
+                            initialData.firstLesson.type,
+                            initialData.firstLesson.url,
+                            initialData.firstLesson.title
+                        );
+                    }
+                    setTimeout(() => {
+                        if (window.lucide) lucide.createIcons();
+                    }, 50);
+                },
+
+                loadLesson(id, type, url, title) {
+                    this.currentLessonId = id;
+                    this.currentType = type;
+                    this.currentVideoUrl = url;
+                    this.currentPdfUrl = null;
+                    this.currentLessonTitle = title;
+                    this.updateIcons();
+                },
+
+                loadResource(type, url, title) {
+                    this.currentLessonId = null;
+                    this.currentType = type;
+                    this.currentLessonTitle = title;
+
+                    if (type === 'VIDEO') {
+                        this.currentVideoUrl = url;
+                        this.currentPdfUrl = null;
+                    } else if (type === 'PDF') {
+                        this.currentPdfUrl = url;
+                        this.currentVideoUrl = null;
+                    }
+                    this.updateIcons();
+                },
+
+                calculateProgress() {
+                    if (this.totalLessons > 0) {
+                        this.progressPercentage = Math.round((this.completedLessons / this.totalLessons) * 100);
+                    }
+                },
+
+                getEmbedUrl(url) {
+                    if (!url) return '';
+                    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                        let videoId = url.split('v=')[1];
+                        if (!videoId) videoId = url.split('/').pop();
+                        const ampersandPosition = videoId.indexOf('&');
+                        if (ampersandPosition !== -1) {
+                            videoId = videoId.substring(0, ampersandPosition);
+                        }
+                        return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                    }
+                    return url;
+                },
+
+                isCompleted(lessonId) {
+                    const btn = document.querySelector(`button[data-lesson-id="${lessonId}"]`);
+                    return btn && btn.dataset.completed === 'true';
+                },
+
+                markComplete() {
+                    if (!this.currentLessonId) return;
+
+                    fetch(`/api/lesson/${this.currentLessonId}/complete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                const btn = document.querySelector(`button[data-lesson-id="${this.currentLessonId}"]`);
+                                if (btn) btn.dataset.completed = 'true';
+
+                                if (!this.isCompleted(this.currentLessonId)) {
+                                    this.completedLessons++;
+                                    this.calculateProgress();
+                                }
+
+                                this.$nextTick(() => {
+                                    this.updateIcons();
+                                });
+                            }
+                        });
+                },
+
+                updateIcons() {
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                }
+            }
+        }
+    </script>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

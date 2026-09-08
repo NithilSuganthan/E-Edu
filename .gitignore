@@ -1,0 +1,32 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment / secrets
+.env
+backend/.env
+
+# Database
+db.sqlite3
+backend/db.sqlite3
+*.sqlite3
+
+# Django generated
+staticfiles/
+backend/staticfiles/
+
+# User uploads (do NOT commit media)
+media/
+backend/media/
+
+# Logs / temp
+*.log
+server_out.log
+server_err.log
+debug_*.txt
+
+# IDE
+.vscode/
+.idea/

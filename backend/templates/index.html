@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% block title %}Inventobots Academy — Future-Ready Learning for Kids{% endblock %}
+{% block extra_head %}
+<style>
+    /* Clean Professional Animations */
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up {
+        animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .animation-delay-200 { animation-delay: 200ms; }
+    .animation-delay-400 { animation-delay: 400ms; }
+    
+    /* Progress Bar */
+    @keyframes progress { 0% { width: 0%; } 100% { width: 100%; } }
+    .slide-bar-fill { 
+        height: 100%; 
+        background: #0284c7; 
+        animation: progress 5s linear forwards; 
+        border-radius: 999px; 
+    }
+    .slide-bar-paused { animation-play-state: paused; }
+
+    /* Course card aspect ratio */
+    .course-thumb { aspect-ratio: 16/10; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<script id="hero-slides-data" type="application/json">
+    {{ hero_slides_json|safe }}
+</script>
+
+<!-- ==================== HERO SECTION ==================== -->
+<section class="min-h-[70vh] lg:min-h-screen flex items-center bg-white relative overflow-hidden pb-16 lg:pb-32 pt-24"
+    x-data="{ 
+            activeSlide: 0,
+            slides: JSON.parse(document.getElementById('hero-slides-data').textContent),
+            interval: null,
+            isPaused: false,
+            progressKey: 0,
+            autoplay() {
+                if (this.interval) clearInterval(this.interval);
+                this.isPaused = false;
+                this.progressKey++;
+                this.interval = setInterval(() => {
+                    this.activeSlide = (this.activeSlide + 1) % this.slides.length;
+                    this.progressKey++;
+                }, 5000);
+            },
+            stop() { 
+                if (this.interval) clearInterval(this.interval); 
+                this.interval = null;
+                this.isPaused = true;
+            },
+            goToSlide(index) { this.activeSlide = index; this.stop(); this.autoplay(); },
+            nextSlide() { this.activeSlide = (this.activeSlide + 1) % this.slides.length; this.stop(); this.autoplay(); },
+            prevSlide() { this.activeSlide = (this.activeSlide === 0) ? this.slides.length - 1 : this.activeSlide - 1; this.stop(); this.autoplay(); }
+        }" x-init="autoplay()" @mouseenter="stop()" @mouseleave="autoplay()">
+
+    <!-- Subtle Background Decoration -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+        <div class="absolute top-[-20%] right-[-10%] w-[50%] h-[70%] rounded-full bg-brand-50 blur-3xl opacity-70"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[60%] rounded-full bg-indigo-50 blur-3xl opacity-70"></div>
+    </div>
+
+    <!-- ===== SLIDE CONTENT ===== -->
+    <div class="w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 relative z-10 h-full flex flex-col justify-center">
+        <template x-for="(slide, index) in slides" :key="index">
+            <div x-show="activeSlide === index" class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+
+                <!-- ===== LEFT: TEXT CONTENT ===== -->
+                <div class="z-10 order-2 lg:order-1 pt-6 lg:pt-0">
+                    <div x-show="activeSlide === index"
+                        x-transition:enter="transition ease-out duration-700"
+                        x-transition:enter-start="opacity-0 translate-y-8"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-8">
+
+                        <div class="relative z-10">
+                            <!-- Category Badge -->
+                            <div class="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 px-4 py-1.5 rounded-full mb-6 text-brand-700 text-xs font-semibold tracking-wide uppercase shadow-sm">
+                                <span x-text="slide.badge"></span>
+                            </div>
+
+                            <!-- Title -->
+                            <h1 class="text-4xl md:text-6xl lg:text-[5rem] font-display font-bold text-slate-900 leading-tight tracking-tight mb-4" x-text="slide.title"></h1>
+                            <h2 class="text-xl md:text-2xl font-medium text-slate-500 mt-2" x-text="slide.subtitle"></h2>
+
+                            <template x-if="slide.desc">
+                                <p class="text-base md:text-lg text-slate-600 mt-6 leading-relaxed max-w-xl" x-text="slide.desc"></p>
+                            </template>
+                            <template x-if="slide.tagline">
+                                <div class="mt-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                    <p class="text-lg text-slate-800 font-semibold mb-3" x-text="slide.tagline"></p>
+                                    <ul class="space-y-2 text-slate-600">
+                                        <template x-for="highlight in slide.highlights" :key="highlight">
+                                            <li class="flex items-start gap-3">
+                                                <i data-lucide="check-circle" class="w-5 h-5 text-brand-600 shrink-0 mt-0.5"></i>
+                                                <span x-text="highlight"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <!-- Buttons -->
+                            <div class="flex flex-wrap gap-4 mt-8">
+                                <a :href="slide.cta_p"
+                                    class="bg-brand-600 hover:bg-brand-500 text-white px-8 py-4 rounded-xl font-bold uppercase tracking-wide text-sm transition-all transform hover:-translate-y-0.5 shadow-sm">
+                                    <span class="flex items-center gap-2"><span x-text="slide.cta_p_text"></span>
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                                </a>
+                                <template x-if="slide.cta_s">
+                                    <a :href="slide.cta_s"
+                                        :target="slide.cta_s && slide.cta_s.startsWith('http') ? '_blank' : ''"
+                                        class="px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold uppercase tracking-wide hover:bg-slate-50 hover:border-slate-300 rounded-xl transition-all text-sm shadow-sm group">
+                                        <span x-text="slide.cta_s_text" class="group-hover:text-brand-600 transition-colors"></span>
+                                    </a>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== RIGHT: SLIDE IMAGE ===== -->
+                <div class="relative flex justify-center items-center order-1 lg:order-2"
+                    x-show="activeSlide === index"
+                    x-transition:enter="transition ease-out duration-700 delay-100"
+                    x-transition:enter-start="opacity-0 translate-y-8"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-300 absolute top-0 right-0 w-full"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-8">
+
+                    <div class="relative w-full max-w-2xl">
+                        <!-- Slide Image -->
+                        <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl shadow-slate-200 border border-slate-100">
+                            <img :src="slide.image" :alt="slide.title" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- ===== PROGRESS BAR PAGINATION ===== -->
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-lg px-6">
+        <!-- Progress Bars -->
+        <div class="flex items-center gap-3 mb-4">
+            <template x-for="(slide, index) in slides" :key="'bar-'+index">
+                <button @click="goToSlide(index)" class="flex-1 h-1.5 rounded-full overflow-hidden transition-all duration-300 bg-slate-200">
+                    <div x-show="activeSlide === index" :key="'fill-'+progressKey"
+                        class="slide-bar-fill" :class="isPaused ? 'slide-bar-paused' : ''"></div>
+                    <div x-show="index < activeSlide" class="h-full w-full bg-brand-600 rounded-full"></div>
+                </button>
+            </template>
+        </div>
+        <!-- Controls row -->
+        <div class="flex items-center justify-between text-slate-500">
+            <button @click="prevSlide()" class="hover:text-brand-600 transition-colors p-1 bg-white rounded-full shadow-sm border border-slate-100">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <div class="text-sm font-semibold tracking-widest uppercase">
+                <span class="text-brand-600" x-text="String(activeSlide + 1).padStart(2, '0')"></span>
+                <span class="mx-2 text-slate-300">/</span>
+                <span x-text="String(slides.length).padStart(2, '0')"></span>
+            </div>
+            <button @click="nextSlide()" class="hover:text-brand-600 transition-colors p-1 bg-white rounded-full shadow-sm border border-slate-100">
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== WHY INVENTOBOTS ==================== -->
+<section class="py-20 md:py-32 bg-slate-50 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div class="text-center mb-16 md:mb-20">
+            <p class="text-brand-600 text-sm font-bold uppercase tracking-widest mb-4">Why Choose Us</p>
+            <h2 class="text-4xl md:text-5xl font-display font-bold text-slate-900">Built for the <span class="gradient-text">Innovators</span> of Tomorrow</h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 md:gap-10">
+            <div class="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-2 group">
+                <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-brand-100 transition-colors shadow-sm">
+                    <i data-lucide="flask-conical" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-4">Hands-on Method</h3>
+                <p class="text-slate-600 leading-relaxed">Learning by doing is our core methodology. We provide practical experiences from circuits to coding.</p>
+            </div>
+            <div class="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-2 group">
+                <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-indigo-100 transition-colors shadow-sm">
+                    <i data-lucide="users" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-4">Expert Mentors</h3>
+                <p class="text-slate-600 leading-relaxed">Certified instructors who turn complex concepts into exciting challenges students love to solve.</p>
+            </div>
+            <div class="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-2 group">
+                <div class="w-16 h-16 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-sky-100 transition-colors shadow-sm">
+                    <i data-lucide="brain" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-4">Holistic Growth</h3>
+                <p class="text-slate-600 leading-relaxed">From comprehensive coding to mental mathematics, we cover the full spectrum for complete development.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FEATURED COURSES ==================== -->
+<section class="py-20 md:py-32 bg-white relative" x-data="{ 
+        courses: [],
+        selectedCourse: null,
+        getWhatsappLink(course) {
+            const phone = '919566128127';
+            const text = `Hi, I'm interested in the ${course.title}. Please share payment details and further information.`;
+            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        }
+    }" x-init="fetch('http://127.0.0.1:8000/api/courses/')
+        .then(response => response.json())
+        .then(data => courses = data)">
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div class="text-center mb-16 md:mb-20">
+            <p class="text-brand-600 text-sm font-bold uppercase tracking-widest mb-4">Programs</p>
+            <h2 class="text-4xl md:text-5xl font-display font-bold text-slate-900">Featured <span class="gradient-text">Courses</span></h2>
+        </div>
+
+        <!-- 3-Column Uniform Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <template x-for="course in courses.slice(0, 3)" :key="course.id">
+                <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-2 flex flex-col group"
+                     @click="selectedCourse = course">
+                     
+                    <div class="course-thumb relative overflow-hidden bg-slate-100">
+                        <img :src="course.image" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-slate-900 shadow-sm border border-slate-100">
+                            <span x-text="'₹' + course.price"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-8 flex flex-col flex-grow">
+                        <span class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-2" x-text="course.category"></span>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-3 group-hover:text-brand-600 transition-colors" x-text="course.title"></h3>
+                        <p class="text-slate-600 text-base mb-8 flex-grow line-clamp-2 leading-relaxed" x-text="course.description"></p>
+                        <button class="w-full bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-200 text-slate-900 hover:text-brand-700 font-bold py-3.5 rounded-xl transition-all shadow-sm">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div x-show="courses.length === 0" class="text-center text-slate-500 py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+            <p class="text-lg">No courses available at the moment. Please check back later.</p>
+        </div>
+
+        <div class="mt-16 text-center">
+            <a href="/courses/"
+                class="inline-flex items-center gap-3 bg-white border border-slate-200 hover:border-slate-300 text-slate-900 hover:bg-slate-50 px-10 py-4 rounded-xl font-bold transition-all shadow-sm group">
+                Explore All Courses
+                <i data-lucide="arrow-right" class="w-5 h-5 group-hover:text-brand-600 transition-colors"></i>
+            </a>
+        </div>
+
+        <!-- Detail Modal Simplified/Professional -->
+        <div x-show="selectedCourse"
+            class="fixed inset-0 flex items-center justify-center px-4 bg-slate-900/40 backdrop-blur-sm z-[9999]"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
+
+            <div class="bg-white w-full max-w-3xl rounded-3xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
+                @click.away="selectedCourse = null" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-8">
+
+                <div class="relative h-56 sm:h-72 bg-slate-100">
+                    <img :src="selectedCourse?.image" :alt="selectedCourse?.title" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                    <button @click="selectedCourse = null"
+                        class="absolute top-4 right-4 bg-white/20 hover:bg-white text-white hover:text-slate-900 p-2.5 rounded-full backdrop-blur-md transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                    <div class="absolute bottom-8 left-8 right-8">
+                        <span class="px-3 py-1 bg-brand-600 text-white text-xs font-bold rounded-full mb-3 inline-block uppercase tracking-wide" x-text="selectedCourse?.category"></span>
+                        <h3 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight" x-text="selectedCourse?.title"></h3>
+                    </div>
+                </div>
+
+                <div class="p-8 overflow-y-auto space-y-8 custom-scrollbar">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <div class="text-center"><p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Price</p><p class="font-bold text-slate-900 text-lg" x-text="'₹' + selectedCourse?.price"></p></div>
+                        <div class="text-center border-l border-slate-200"><p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Duration</p><p class="font-bold text-slate-900 text-lg" x-text="selectedCourse?.duration || 'N/A'"></p></div>
+                        <div class="text-center border-l border-slate-200"><p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Mode</p><p class="font-bold text-slate-900 text-lg" x-text="selectedCourse?.mode || 'Online'"></p></div>
+                        <div class="text-center border-l border-slate-200"><p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Start</p><p class="font-bold text-slate-900 text-lg" x-text="selectedCourse?.start_date || 'Flexible'"></p></div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">About this Course</h4>
+                        <p class="text-slate-600 leading-relaxed" x-text="selectedCourse?.description"></p>
+                    </div>
+                    
+                    <template x-if="selectedCourse?.syllabus">
+                        <div>
+                            <h4 class="text-xl font-bold text-slate-900 mb-3">What You'll Learn</h4>
+                            <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                                <p class="text-slate-700 whitespace-pre-line leading-relaxed" x-text="selectedCourse?.syllabus"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="p-6 border-t border-slate-100 bg-white z-10">
+                    <a :href="getWhatsappLink(selectedCourse)" target="_blank"
+                        class="w-full flex items-center justify-center gap-3 bg-brand-600 hover:bg-brand-500 text-white font-bold py-4 rounded-xl transition shadow-sm hover:-translate-y-0.5">
+                        <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        <span>Enquire & Enroll</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CTA SECTION ==================== -->
+<section class="py-20 md:py-32 bg-slate-900 relative overflow-hidden text-center block">
+    <div class="relative z-10 max-w-4xl mx-auto px-6">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-6 tracking-tight">Ready to Start the Journey?</h2>
+        <p class="text-slate-300 max-w-2xl mx-auto mb-12 text-lg leading-relaxed">Book a free trial class and see why hundreds of parents trust Inventobots Academy for their child's future-ready education.</p>
+        <a href="https://wa.me/919566128127?text=Hi,%20I%20would%20like%20to%20book%20a%20free%20trial%20for%20my%20child."
+            target="_blank"
+            class="inline-flex items-center gap-3 bg-white hover:bg-slate-50 text-slate-900 px-10 py-5 rounded-xl font-bold text-base transition-all shadow-xl hover:-translate-y-1">
+            <i data-lucide="calendar" class="w-5 h-5 text-brand-600"></i>
+            Book a Free Trial
+        </a>
+    </div>
+</section>
+{% endblock %}

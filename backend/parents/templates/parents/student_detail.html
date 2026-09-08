@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student.full_name }} — Details | Inventobots Academy</title>
+    <link rel="icon" href="/static/Logo.png">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/static/js/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .glass-header {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300"
+    x-data="{ ...theme }"
+    x-init="$watch('darkMode', val => val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); if(darkMode) document.documentElement.classList.add('dark');">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-header bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-white/10 py-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'parents:dashboard' %}"
+                    class="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors"
+                    aria-label="Back to parent dashboard">
+                    <i data-lucide="arrow-left" class="w-5 h-5" aria-hidden="true"></i>
+                    Dashboard
+                </a>
+                <span class="text-xl font-bold tracking-tight text-slate-800 dark:text-white hidden sm:block">
+                    Invento<span class="text-blue-600 dark:text-blue-400">bots Academy</span>
+                </span>
+            </div>
+            <a href="{% url 'parents:logout' %}"
+                class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-full font-semibold transition flex items-center gap-2 text-sm">
+                <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
+                Logout
+            </a>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-20 px-4">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Student Header Card -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 md:p-8 rounded-3xl shadow-lg text-white mb-8">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                    {% if student.profile_image %}
+                    <img src="{{ student.profile_image.url }}" alt="Profile photo of {{ student.full_name }}"
+                        class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover" loading="lazy">
+                    {% else %}
+                    <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-white/20 flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-12 h-12" aria-hidden="true"></i>
+                    </div>
+                    {% endif %}
+                    <div class="text-center sm:text-left">
+                        <h1 class="text-3xl font-bold">{{ student.full_name }}</h1>
+                        <p class="text-blue-100 mt-1">Grade {{ student.grade_level }} &middot; Level {{ student.level }}</p>
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm">
+                                Born: {{ student.date_of_birth|date:"M d, Y" }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm">
+                                Joined: {{ student.enrollment_date|date:"M d, Y" }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm">
+                                {{ student.xp }} XP
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enrollments -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Courses &amp; Enrollments</h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for enrollment in enrollments %}
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-100 dark:border-slate-700 p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-slate-800 dark:text-white">{{ enrollment.course.title }}</span>
+                            <span class="text-xs font-bold uppercase px-2 py-0.5 rounded
+                                {% if enrollment.status == 'Active' %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300
+                                {% elif enrollment.status == 'Completed' %}bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300
+                                {% else %}bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300{% endif %}">
+                                {{ enrollment.status }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Mode: {{ enrollment.mode }} &middot; Enrolled {{ enrollment.enrollment_date|date:"M d, Y" }}
+                        </p>
+                        <div class="mt-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2" role="progressbar"
+                            aria-valuenow="{{ enrollment.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"
+                            aria-label="{{ enrollment.course.title }} completion">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: {{ enrollment.completion_percentage }}%;"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="md:col-span-2 text-center py-10 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                        <i data-lucide="book-open" class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" aria-hidden="true"></i>
+                        <p class="text-slate-500 dark:text-slate-400">No enrollments yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Attendance -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Recent Attendance</h2>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-100 dark:border-slate-700 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Course</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            {% for record in attendance_records %}
+                            <tr>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">{{ record.date|date:"M d, Y" }}</td>
+                                <td class="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">{{ record.course.title }}</td>
+                                <td class="px-6 py-3 whitespace-nowrap">
+                                    <span class="text-xs font-bold uppercase px-2 py-0.5 rounded
+                                        {% if record.status == 'Present' %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300
+                                        {% elif record.status == 'Absent' %}bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300
+                                        {% elif record.status == 'Late' %}bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300
+                                        {% else %}bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300{% endif %}">
+                                        {{ record.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="px-6 py-8 text-center text-sm text-slate-400 italic">No attendance records yet</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="grid md:grid-cols-2 gap-8">
+
+                <!-- Trainer Feedback -->
+                <section>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Trainer Feedback</h2>
+                    <div class="space-y-3">
+                        {% for feedback in feedback_records %}
+                        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-4 rounded-2xl shadow-sm">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-800 dark:text-white text-sm">{{ feedback.trainer_name }}</span>
+                                <span class="text-xs text-slate-400">{{ feedback.feedback_date|date:"M d, Y" }}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 italic">"{{ feedback.feedback_text }}"</p>
+                            <div class="flex items-center gap-1 mt-2">
+                                {% for i in "12345" %}
+                                <i data-lucide="star" class="w-3 h-3 {% if forloop.counter <= feedback.rating %}fill-orange-400 text-orange-400{% else %}text-slate-200 dark:text-slate-700{% endif %}" aria-hidden="true"></i>
+                                {% endfor %}
+                                <span class="sr-only">{{ feedback.rating }} out of 5 stars</span>
+                                <span class="text-[10px] font-medium text-slate-400 ml-1 uppercase">{{ feedback.category }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                            <p class="text-sm text-slate-400 italic">No trainer feedback received yet</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Skill Progress -->
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mt-8 mb-4">Skill Progress</h2>
+                    <div class="space-y-2">
+                        {% for progress in progress_records %}
+                        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ progress.skill_name }}</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100 font-bold uppercase">{{ progress.proficiency_level }}</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5" role="progressbar"
+                                aria-valuenow="{{ progress.score }}" aria-valuemin="0" aria-valuemax="100"
+                                aria-label="{{ progress.skill_name }} progress">
+                                <div class="bg-blue-500 h-1.5 rounded-full transition-all" style="width: {{ progress.score }}%;"></div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-slate-400 italic">No skill assessments yet</p>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- Certificates / Reports / Alerts -->
+                <section>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Certificates</h2>
+                    <div class="space-y-2 mb-8">
+                        {% for cert in certificates %}
+                        {% if cert.status == 'Issued' %}
+                        <div class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="award" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true"></i>
+                                <span class="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                                    {{ cert.certificate.course.title }} ({{ cert.certificate.certificate_id }})
+                                </span>
+                            </div>
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ cert.awarded_date|date:"M Y" }}</span>
+                        </div>
+                        {% endif %}
+                        {% empty %}
+                        <p class="text-sm text-slate-400 italic">No certificates earned yet</p>
+                        {% endfor %}
+                    </div>
+
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Reports</h2>
+                    <div class="space-y-2 mb-8">
+                        {% for report in reports %}
+                        <div class="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-3 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="file-text" class="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true"></i>
+                                <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                    {{ report.report_type }} — {{ report.period_start|date:"M d" }} to {{ report.period_end|date:"M d, Y" }}
+                                </span>
+                            </div>
+                            <a href="{% url 'parents:download_report' report.id %}"
+                                class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 inline-flex items-center gap-1"
+                                aria-label="Download {{ report.report_type }} report">
+                                <i data-lucide="download" class="w-3 h-3" aria-hidden="true"></i> Download
+                            </a>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-slate-400 italic">No reports available yet</p>
+                        {% endfor %}
+                    </div>
+
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Alerts</h2>
+                    <div class="space-y-2">
+                        {% for alert in alerts %}
+                        <div class="p-3 rounded-xl border {% if alert.severity == 'Critical' %}bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800{% elif alert.severity == 'Warning' %}bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800{% else %}bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700{% endif %}">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ alert.alert_type }}</span>
+                                {% if not alert.is_read %}
+                                <a href="{% url 'parents:mark_alert_read' alert.id %}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">Mark Read</a>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">{{ alert.message }}</p>
+                            <p class="text-[10px] text-slate-400 mt-1">{{ alert.created_at|date:"M d, Y" }}</p>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-slate-400 italic">No alerts at this time</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () { lucide.createIcons(); });
+    </script>
+</body>
+
+</html>

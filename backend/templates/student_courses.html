@@ -1,0 +1,120 @@
+{% extends 'student_base.html' %}
+
+{% block title %}My Courses | Inventobots{% endblock %}
+{% block header_title %}My Courses{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto pt-6">
+
+    <!-- Course Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div
+            class="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div class="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                    <i data-lucide="book-open" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Total Enrolled</p>
+                    <h3 class="text-xl md:text-2xl font-bold dark:text-white">{{ total_enrolled }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div class="p-2 md:p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl">
+                    <i data-lucide="check-circle" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Completed</p>
+                    <h3 class="text-xl md:text-2xl font-bold dark:text-white">{{ completed_courses }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div
+                    class="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl">
+                    <i data-lucide="award" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400">Certificates</p>
+                    <h3 class="text-xl md:text-2xl font-bold dark:text-white">{{ certificates_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Courses Grid -->
+    <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6">Active Learning</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for enrollment in enrollments %}
+        <div
+            class="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-xl transition-all duration-300">
+            <!-- Course Image -->
+            <div class="h-48 bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+                {% if enrollment.course.image %}
+                <img src="{{ enrollment.course.image.url }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                {% else %}
+                <div
+                    class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+                    <i data-lucide="book-open" class="w-12 h-12 text-white/50"></i>
+                </div>
+                {% endif %}
+
+                <div
+                    class="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-slate-300 shadow-sm">
+                    {{ enrollment.current_level|default:"Start" }}
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-4 md:p-6">
+                <!-- Shorten the class string line to avoid wrapping the tag -->
+                <h4 class="text-base md:text-lg font-bold text-slate-800 dark:text-white mb-2 line-clamp-1">
+                    {{ enrollment.course.title|default:"Untitled Course" }}
+                </h4>
+
+                <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">
+                    {{ enrollment.course.description|striptags|default:"No description" }}
+                </p>
+
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span class="text-slate-600 dark:text-slate-300">Progress</span>
+                        <span class="text-blue-600 dark:text-blue-400">{{ enrollment.completion_percentage }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div class="bg-blue-600 h-full rounded-full transition-all duration-500"
+                            x-init="$el.style.width = '{{ enrollment.completion_percentage }}%'">
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{% url 'course_player' enrollment.course.id %}"
+                    class="block w-full text-center bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold py-2 md:py-3 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors text-sm md:text-base">
+                    Continue Lesson
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-12 text-center text-slate-500">
+            <div
+                class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="book-open" class="w-8 h-8 text-slate-400"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">No Active Courses</h3>
+            <p class="text-sm">You haven't enrolled in any courses yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

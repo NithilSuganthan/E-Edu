@@ -1,0 +1,643 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard — Inventobots Academy</title>
+    <link rel="icon" href="/static/Logo.png">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/static/js/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Dark Mode Transitions */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .glass-header,
+        .glass-card,
+        button,
+        a,
+        li,
+        input {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .glass-header {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300" x-data="{ 
+    showAlerts: false,
+    showAddStudent: false,
+    ...theme
+}"
+    x-init="$watch('darkMode', val => val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); if(darkMode) document.documentElement.classList.add('dark');">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 glass-header bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-white/10"
+        :class="{ 'py-4': !scrolled, 'py-2 shadow-md': scrolled }" x-data="{ scrolled: false, mobileMenu: false }"
+        @scroll.window="scrolled = (window.pageYOffset > 20)">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white">
+                        <i data-lucide="users" class="w-6 h-6" aria-hidden="true"></i>
+                    </div>
+                    <span class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
+                        Invento<span class="text-blue-600 dark:text-blue-400">bots Academy</span>
+                    </span>
+                </div>
+
+                <!-- Desktop User Info -->
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ parent.user.get_full_name }}
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ parent.user.email }}</p>
+                    </div>
+
+                    <a href="{% url 'parents:logout' %}"
+                        class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-full font-semibold transition flex items-center gap-2">
+                        <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
+                        Logout
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenu = !mobileMenu"
+                        class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors focus:outline-none"
+                        aria-label="Toggle navigation">
+                        <i x-show="!mobileMenu" data-lucide="menu" class="w-6 h-6"></i>
+                        <i x-show="mobileMenu" data-lucide="x" class="w-6 h-6" style="display: none;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div x-show="mobileMenu" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-4"
+            class="md:hidden absolute top-full left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+            <div class="px-4 py-6 space-y-3">
+                <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+                    <p class="font-bold text-slate-800 dark:text-white">{{ parent.user.get_full_name }}</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">{{ parent.user.email }}</p>
+                </div>
+                <a href="{% url 'parents:logout' %}"
+                    class="block px-4 py-3 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Welcome Section -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-slate-800 dark:text-white">
+                    Welcome back, {{ parent.user.first_name|default:parent.user.username }}!
+                </h1>
+                <p class="text-slate-600 dark:text-slate-400 mt-2">Here's an overview of your children's progress</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <button type="button" @click="showAddStudent = true"
+                    class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg border border-blue-500/30 text-left w-full hover:shadow-xl hover:scale-[1.02] transition-all group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-bold text-blue-100 uppercase tracking-wide">Action</p>
+                            <p class="text-2xl font-bold text-white mt-1 group-hover:underline">Add Student</p>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                            <i data-lucide="user-plus" class="w-6 h-6 text-white" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <div
+                    class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase">Total Students
+                            </p>
+                            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">{{ total_students }}</p>
+                        </div>
+                        <div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-xl">
+                            <i data-lucide="users" class="w-6 h-6 text-blue-600 dark:text-blue-400"
+                                aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase">Active Courses
+                            </p>
+                            <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">
+                                {% for data in student_data %}
+                                {{ data.enrollments.count }}{% if not forloop.last %}+{% endif %}
+                                {% empty %}
+                                0
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl">
+                            <i data-lucide="book-open" class="w-6 h-6 text-green-600 dark:text-green-400"
+                                aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button"
+                    class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 text-left w-full hover:shadow-md transition-shadow"
+                    @click="showAlerts = !showAlerts" aria-label="View pending alerts" :aria-expanded="showAlerts">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase">Pending Alerts
+                            </p>
+                            <p class="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-1">{{ total_alerts }}
+                            </p>
+                        </div>
+                        <div class="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-xl">
+                            <i data-lucide="bell" class="w-6 h-6 text-orange-600 dark:text-orange-400"
+                                aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Student Cards -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6">Your Children</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    {% for data in student_data %}
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+                        <!-- Student Header -->
+                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+                            <div class="flex items-center gap-4">
+                                {% if data.student.profile_image %}
+                                <img src="{{ data.student.profile_image.url }}"
+                                    alt="Profile photo of {{ data.student.full_name }}"
+                                    class="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
+                                    loading="lazy">
+                                {% else %}
+                                <div
+                                    class="w-16 h-16 rounded-full border-4 border-white shadow-lg bg-white/20 flex items-center justify-center">
+                                    <i data-lucide="user" class="w-8 h-8" aria-hidden="true"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h3 class="text-2xl font-bold">{{ data.student.full_name }}</h3>
+                                    <div class="flex flex-wrap gap-2 mt-1">
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                                            {{ data.student.grade_level }}
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
+                                            Born: {{ data.student.date_of_birth|date:"M d, Y" }}
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100">
+                                            Joined: {{ data.student.enrollment_date|date:"M d, Y" }}</span>
+                                        <a href="{% url 'parents:student_detail' data.student.id %}"
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-white/25 hover:bg-white/40 text-white transition-colors"
+                                            aria-label="View detailed report for {{ data.student.full_name }}">
+                                            View Details →
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Stats -->
+                        <div class="p-6 space-y-4">
+                            <!-- Attendance -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span
+                                        class="text-sm font-semibold text-slate-600 dark:text-slate-400">Attendance</span>
+                                    <span class="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                        {% if data.attendance_percentage > 0 %}
+                                        {{ data.attendance_percentage }}%
+                                        {% else %}
+                                        Awaiting records
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div
+                                    class="flex justify-between items-center mb-2 text-xs text-slate-500 dark:text-slate-500">
+                                    <span>Present: {{ data.days_present }} days</span>
+                                    <span>Absent: {{ data.days_absent }} days</span>
+                                </div>
+                                <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2" role="progressbar"
+                                    aria-valuenow="{{ data.attendance_percentage|default:0 }}" aria-valuemin="0"
+                                    aria-valuemax="100" aria-label="Attendance percentage">
+                                    <div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all"
+                                        :style="{ width: '{{ data.attendance_percentage|default:0 }}%' }"></div>
+                                </div>
+                            </div>
+
+                            <!-- Active Courses -->
+                            <div>
+                                <p class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Active Courses
+                                </p>
+                                <div class="space-y-2">
+                                    {% for enrollment in data.enrollments %}
+                                    <div
+                                        class="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="book" class="w-4 h-4 text-blue-600 dark:text-blue-400"
+                                                aria-hidden="true"></i>
+                                            <span class="text-base font-medium dark:text-slate-300">
+                                                {{ enrollment.course.title }}
+                                            </span>
+                                        </div>
+                                        <span class="text-xs font-bold text-blue-600 dark:text-blue-400">
+                                            {% if enrollment.completion_percentage > 0 %}
+                                            {{ enrollment.completion_percentage }}%
+                                            {% else %}
+                                            Orientation phase
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-sm text-slate-400 italic">No active courses</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Certificates -->
+                            <div>
+                                <p class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Certificates
+                                    Earned</p>
+                                <div class="space-y-2">
+                                    {% for cert in data.student.certificates.all %}
+                                    {% if cert.status == 'Issued' %}
+                                    <div
+                                        class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="award"
+                                                class="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                                                aria-hidden="true"></i>
+                                            <span class="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                                                {{ cert.certificate.course.title }} ({{ cert.certificate.certificate_id }})
+                                            </span>
+                                        </div>
+                                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                            {{ cert.awarded_date|date:"M Y" }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    {% empty %}
+                                    <div
+                                        class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="award" class="w-6 h-6 text-slate-300 dark:text-slate-600 mb-1"
+                                            aria-hidden="true"></i>
+                                        <p class="text-xs text-slate-400">No certificates earned yet</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Skill Progress -->
+                            <div>
+                                <p class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Skill Progress
+                                </p>
+                                <div class="space-y-2">
+                                    {% for progress in data.recent_progress %}
+                                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                {{ progress.skill_name|default:"Skill Mastery" }}
+                                            </span>
+                                            <span
+                                                class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100 font-bold uppercase">
+                                                {{ progress.proficiency_level|default:"Pending Assessment" }}
+                                            </span>
+                                        </div>
+                                        {% if progress.notes %}
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-1 leading-tight"
+                                            title="{{ progress.notes }}">
+                                            {{ progress.notes|truncatechars:60 }}
+                                        </p>
+                                        {% endif %}
+                                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5"
+                                            role="progressbar" aria-valuenow="{{ progress.score|default:0 }}"
+                                            aria-valuemin="0" aria-valuemax="100"
+                                            aria-label="{{ progress.skill_name|default:'Skill' }} progress">
+                                            <div class="bg-blue-500 dark:bg-blue-400 h-1.5 rounded-full transition-all"
+                                                :style="{ width: '{{ progress.score|default:0 }}%' }"></div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div
+                                        class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="trending-up"
+                                            class="w-6 h-6 text-slate-300 dark:text-slate-600 mb-1"
+                                            aria-hidden="true"></i>
+                                        <p class="text-xs text-slate-400">No progress tracking data available</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Trainer Feedback -->
+                            <div>
+                                <p class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Trainer
+                                    Feedback</p>
+                                <div class="space-y-3">
+                                    {% for feedback in data.recent_feedback %}
+                                    <div
+                                        class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl shadow-sm">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div class="flex items-center gap-1.5">
+                                                <div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300"
+                                                    aria-hidden="true">
+                                                    {{ feedback.trainer_name|slice:":1" }}
+                                                </div>
+                                                <span class="text-xs font-bold text-slate-800 dark:text-white">
+                                                    {{ feedback.trainer_name }}
+                                                </span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400">
+                                                {{ feedback.feedback_date|date:"M d" }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-slate-600 dark:text-slate-400 italic line-clamp-2"
+                                            title="{{ feedback.feedback_text }}">
+                                            "{{ feedback.feedback_text }}"
+                                        </p>
+                                        <div class="flex items-center gap-1 mt-1.5">
+                                            {% for i in "12345" %}
+                                            <i data-lucide="star"
+                                                class="w-2.5 h-2.5 {% if forloop.counter <= feedback.rating %}fill-orange-400 text-orange-400{% else %}text-slate-200 dark:text-slate-700{% endif %}"
+                                                aria-hidden="true"></i>
+                                            {% endfor %}
+                                            <span class="sr-only">{{ feedback.rating }} out of 5 stars</span>
+                                            <span class="text-[10px] font-medium text-slate-400 ml-1">
+                                                {{ feedback.category }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div
+                                        class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                        <i data-lucide="message-square"
+                                            class="w-6 h-6 text-slate-300 dark:text-slate-600 mb-1"
+                                            aria-hidden="true"></i>
+                                        <p class="text-xs text-slate-400">No trainer feedback received yet</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Unread Alerts -->
+                            {% if data.unread_alerts %}
+                            <div
+                                class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-3 rounded-xl">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="alert-circle" class="w-4 h-4 text-orange-600 dark:text-orange-400"
+                                        aria-hidden="true"></i>
+                                    <span class="text-sm font-semibold text-orange-700 dark:text-orange-300">
+                                        {{ data.unread_alerts.count }} New Alert(s)
+                                    </span>
+                                </div>
+                                {% for alert in data.unread_alerts|slice:":2" %}
+                                <p class="text-xs text-orange-600 dark:text-orange-400 ml-6">•
+                                    {{ alert.message|truncatewords:10 }}
+                                </p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Latest Report -->
+                            {% if data.latest_report %}
+                            <div
+                                class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 rounded-xl">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="file-text" class="w-4 h-4 text-blue-600 dark:text-blue-400"
+                                            aria-hidden="true"></i>
+                                        <span class="text-sm font-semibold text-blue-700 dark:text-blue-300">Latest
+                                            Report</span>
+                                    </div>
+                                    <a href="{% url 'parents:download_report' data.latest_report.id %}"
+                                        class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
+                                        aria-label="Download {{ data.latest_report.report_type }} report">
+                                        <i data-lucide="download" class="w-3 h-3" aria-hidden="true"></i>
+                                        Download
+                                    </a>
+                                </div>
+                                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1 ml-6">
+                                    {{ data.latest_report.report_type }} - {{ data.latest_report.generated_date }}
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div
+                        class="col-span-2 text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+                        <i data-lucide="users" class="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4"
+                            aria-hidden="true"></i>
+                        <p class="text-slate-500 dark:text-slate-400">No students enrolled yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Alerts Panel (Slide-over) -->
+            <div x-show="showAlerts" x-transition class="fixed inset-0 z-50" style="display: none;" role="dialog"
+                aria-modal="true" aria-labelledby="alerts-title" @keydown.escape="showAlerts = false">
+                <div class="absolute inset-0 bg-black/50" @click="showAlerts = false"></div>
+                <div
+                    class="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-slate-800 shadow-2xl p-6 overflow-y-auto border-l border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 id="alerts-title" class="text-2xl font-bold text-slate-800 dark:text-white">Alerts</h2>
+                        <button @click="showAlerts = false"
+                            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            aria-label="Close alerts panel">
+                            <i data-lucide="x" class="w-6 h-6" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for alert in all_alerts %}
+                        <div
+                            class="p-4 rounded-xl border {% if alert.severity == 'Critical' %}bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800{% elif alert.severity == 'Warning' %}bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800{% else %}bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800{% endif %}">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="alert-circle"
+                                        class="w-4 h-4 {% if alert.severity == 'Critical' %}text-red-600 dark:text-red-400{% elif alert.severity == 'Warning' %}text-orange-600 dark:text-orange-400{% else %}text-blue-600 dark:text-blue-400{% endif %}"
+                                        aria-hidden="true"></i>
+                                    <span
+                                        class="text-sm font-bold {% if alert.severity == 'Critical' %}text-red-700 dark:text-red-300{% elif alert.severity == 'Warning' %}text-orange-700 dark:text-orange-300{% else %}text-blue-700 dark:text-blue-300{% endif %}">
+                                        {{ alert.alert_type }}
+                                    </span>
+                                </div>
+                                {% if not alert.is_read %}
+                                <a href="{% url 'parents:mark_alert_read' alert.id %}"
+                                    class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                    aria-label="Mark {{ alert.alert_type }} alert as read">
+                                    Mark Read
+                                </a>
+                                {% endif %}
+                            </div>
+                            <p
+                                class="text-sm {% if alert.severity == 'Critical' %}text-red-600 dark:text-red-300{% elif alert.severity == 'Warning' %}text-orange-600 dark:text-orange-300{% else %}text-blue-600 dark:text-blue-300{% endif %} mb-1">
+                                {{ alert.message }}
+                            </p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                {{ alert.student.full_name }} • {{ alert.created_at|date:"M d, Y" }}
+                            </p>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-12">
+                            <i data-lucide="check-circle" class="w-12 h-12 text-green-500 mx-auto mb-2"
+                                aria-hidden="true"></i>
+                            <p class="text-slate-500 dark:text-slate-400">No alerts at this time</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <!-- Add Student Modal -->
+            <div x-show="showAddStudent" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
+                role="dialog" aria-modal="true" aria-labelledby="add-student-title">
+                <div class="flex items-center justify-center min-h-screen px-4">
+                    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showAddStudent = false"></div>
+
+                    <div
+                        class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 transform transition-all">
+                        <div class="absolute top-4 right-4">
+                            <button @click="showAddStudent = false"
+                                class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-center mb-6">
+                            <div
+                                class="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-3">
+                                <i data-lucide="user-plus" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-white" id="add-student-title">Add New
+                                Student</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Create a sub-account for your child.
+                            </p>
+                        </div>
+
+                        <form action="{% url 'parents:add_student' %}" method="POST" class="space-y-4">
+                            {% csrf_token %}
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Full
+                                    Name</label>
+                                <input type="text" name="full_name" required
+                                    class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                    placeholder="Student Name">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Grade
+                                        Level</label>
+                                    <input type="text" name="grade_level" required
+                                        class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                        placeholder="e.g. Grade 5">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Date
+                                        of Birth</label>
+                                    <input type="date" name="date_of_birth" required
+                                        class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Student
+                                    Username</label>
+                                <input type="text" name="username" required
+                                    class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                    placeholder="Unique Username">
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Student
+                                    Password</label>
+                                <input type="password" name="password" required
+                                    class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                    placeholder="Passcode">
+                            </div>
+
+                            <button type="submit"
+                                class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30">
+                                Create Student Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+        });
+
+        // Reinitialize icons when Alpine updates the DOM
+        document.addEventListener('alpine:initialized', function () {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>

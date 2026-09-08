@@ -1,0 +1,85 @@
+{% extends 'student_base.html' %}
+
+{% block title %}Browse Courses | Inventobots{% endblock %}
+{% block header_title %}Browse Courses{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto pt-6">
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Explore Our Courses</h2>
+        <p class="text-slate-500 dark:text-slate-400">Discover new skills and advance your learning journey.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for course in courses %}
+        <div
+            class="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+            <!-- Course Image -->
+            <div class="h-48 bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+                {% if course.image %}
+                <!-- Keep template tags on single line -->
+                <img src="{{ course.image.url }}" alt="Course image for {{ course.title }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy">
+                {% else %}
+                <div
+                    class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
+                    <i data-lucide="book" class="w-12 h-12 text-white/50"></i>
+                </div>
+                {% endif %}
+
+                {% if course.price == 0 %}
+                <div
+                    class="absolute top-4 right-4 bg-green-500/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
+                    Free
+                </div>
+                {% else %}
+                <div
+                    class="absolute top-4 right-4 bg-blue-600/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
+                    ₹{{ course.price }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 flex-1 flex flex-col">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <!-- Single line tag -->
+                        <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                            {{ course.get_category_display }}
+                        </span>
+                    </div>
+
+                    <h4 class="text-xl font-bold text-slate-800 dark:text-white mb-2 line-clamp-1">
+                        {{ course.title }}
+                    </h4>
+                    <!-- Single line tag -->
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-3">
+                        {{ course.description|striptags }}
+                    </p>
+                </div>
+
+                {% if course.id in enrolled_course_ids %}
+                <a href="{% url 'parents:student_courses' %}"
+                    class="block w-full text-center bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold py-3 rounded-xl cursor-default">
+                    Already Enrolled
+                </a>
+                {% else %}
+                <a href="{% url 'parents:enroll_student_core' course.id %}"
+                    class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-600/20">
+                    Enroll Now
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-12 text-center text-slate-500">
+            <p>No courses available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

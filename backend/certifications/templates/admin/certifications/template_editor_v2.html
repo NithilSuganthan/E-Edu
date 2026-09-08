@@ -1,0 +1,508 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Certificate Template Editor — {{ course.name }}{% endblock %}
+
+{% block content %}
+<link
+    href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap"
+    rel="stylesheet">
+
+<style>
+    .template-editor-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        color: white;
+    }
+
+    .editor-header h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .editor-header .course-name {
+        opacity: 0.9;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    .canvas-wrapper {
+        position: relative;
+        display: inline-block;
+        border: 3px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        background: #f8fafc;
+        cursor: default;
+    }
+
+    .canvas-wrapper img {
+        display: block;
+        max-width: 100%;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+
+    .draggable-text {
+        position: absolute;
+        cursor: grab;
+        padding: 6px 14px;
+        border: 2px dashed transparent;
+        border-radius: 6px;
+        white-space: nowrap;
+        user-select: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        z-index: 10;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+    }
+
+    .draggable-text:hover {
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .draggable-text.dragging {
+        cursor: grabbing;
+        border-color: #e74c3c;
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3);
+        z-index: 100;
+    }
+
+    .draggable-text .label-tag {
+        position: absolute;
+        top: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #3498db;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.15s;
+        pointer-events: none;
+    }
+
+    .draggable-text:hover .label-tag,
+    .draggable-text.dragging .label-tag {
+        opacity: 1;
+    }
+
+    .controls-panel {
+        margin-top: 20px;
+        padding: 20px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .controls-panel h3 {
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        color: #334155;
+    }
+
+    .control-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        align-items: flex-end;
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .control-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .control-group input[type="number"],
+    .control-group input[type="text"],
+    .control-group select {
+        width: 140px;
+        padding: 8px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .control-group input[type="number"] {
+        width: 80px;
+    }
+
+    .control-group input[type="color"] {
+        width: 60px;
+        height: 38px;
+        padding: 2px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.2s;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-save:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: white;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+
+    .btn-back:hover {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .save-status {
+        display: inline-block;
+        margin-left: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .save-status.show {
+        opacity: 1;
+    }
+
+    .instructions {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #1e40af;
+        line-height: 1.5;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-right: 12px;
+        min-width: 100px;
+        padding-bottom: 8px;
+    }
+</style>
+
+<div class="template-editor-container">
+
+    <div class="editor-header">
+        <div>
+            <h2>🎨 Certificate Template Editor</h2>
+            <div class="course-name">{{ course.name }}</div>
+        </div>
+        <a href="{% url 'admin:certifications_certificationcourse_change' course.pk %}" class="btn-back">
+            ← Back to Course
+        </a>
+    </div>
+
+    <div class="instructions">
+        <strong>How to use:</strong> Drag boxes to position. Use the controls below to change fonts, sizes, and colors.
+        <br>Fonts are previewed via Google Fonts.
+    </div>
+
+    {% if course.certificate_template %}
+    <div class="canvas-wrapper" id="canvasWrapper">
+        <img src="{{ course.certificate_template.url }}" id="templateImg" draggable="false" />
+
+        <!-- Student Name -->
+        <div class="draggable-text" id="drag-name">
+            <span class="label-tag">STUDENT NAME</span>
+            John Doe
+        </div>
+
+        <!-- Details -->
+        <div class="draggable-text" id="drag-course">
+            <span class="label-tag">COURSE NAME</span>
+            {{ course.name }}
+        </div>
+        <div class="draggable-text" id="drag-date">
+            <span class="label-tag">ISSUE DATE</span>
+            February 11, 2026
+        </div>
+        <div class="draggable-text" id="drag-certid">
+            <span class="label-tag">CERTIFICATE ID</span>
+            INV-2026-0042
+        </div>
+    </div>
+
+    <form method="post" id="positionForm">
+        {% csrf_token %}
+        <div class="controls-panel">
+            <h3>⚙️ Customization</h3>
+
+            <!-- Global Settings -->
+            <div class="control-row">
+                <div class="section-title">Global Style</div>
+                <div class="control-group">
+                    <label>Primary Font</label>
+                    <select name="font_family" id="fontFamily">
+                        {% for font_file, font_name in course.FONT_CHOICES %}
+                        {# Syntax Fixed #}
+                        <option value="{{ font_file }}" {% if course.font_family == font_file %}selected{% endif %}>
+                            {{ font_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Not using detail_font_family explicitly here to keep UI simple, but can be added if requested -->
+                <input type="hidden" name="detail_font_family" id="detailFontFamily" value="{{ course.font_family }}">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 20px;">
+
+            <!-- Student Name Settings -->
+            <div class="control-row">
+                <div class="section-title">Student Name</div>
+                <div class="control-group">
+                    <label>Size (px)</label>
+                    <input type="number" id="nameFontSize" name="name_font_size" value="{{ course.name_font_size }}"
+                        min="12" max="120">
+                </div>
+                <div class="control-group">
+                    <label>Color</label>
+                    <input type="color" id="nameColor" name="name_color" value="{{ course.name_color }}">
+                </div>
+            </div>
+
+            <!-- Details Settings -->
+            <div class="control-row">
+                <div class="section-title">Details (Date, ID)</div>
+                <div class="control-group">
+                    <label>Size (px)</label>
+                    <input type="number" id="detailFontSize" name="detail_font_size"
+                        value="{{ course.detail_font_size }}" min="10" max="80">
+                </div>
+                <div class="control-group">
+                    <label>Color</label>
+                    <input type="color" id="detailColor" name="detail_color" value="{{ course.detail_color }}">
+                </div>
+            </div>
+
+            <!-- Hidden fields for positions -->
+            <input type="hidden" name="name_position_x" id="inp-name-x" value="{{ course.name_position_x }}">
+            <input type="hidden" name="name_position_y" id="inp-name-y" value="{{ course.name_position_y }}">
+            <input type="hidden" name="course_position_x" id="inp-course-x" value="{{ course.course_position_x }}">
+            <input type="hidden" name="course_position_y" id="inp-course-y" value="{{ course.course_position_y }}">
+            <input type="hidden" name="date_position_x" id="inp-date-x" value="{{ course.date_position_x }}">
+            <input type="hidden" name="date_position_y" id="inp-date-y" value="{{ course.date_position_y }}">
+            <input type="hidden" name="certid_position_x" id="inp-certid-x" value="{{ course.certid_position_x }}">
+            <input type="hidden" name="certid_position_y" id="inp-certid-y" value="{{ course.certid_position_y }}">
+
+            <div style="margin-top: 20px; display: flex; align-items: center;">
+                <button type="submit" class="btn-save">💾 Save Configuration</button>
+                <span class="save-status" id="saveStatus"></span>
+            </div>
+        </div>
+    </form>
+
+    {% else %}
+    <div
+        style="text-align: center; padding: 60px 20px; background: #fff; border: 2px dashed #cbd5e1; border-radius: 12px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">📄</div>
+        <h3 style="color: #475569; margin: 0 0 8px 0;">No Template Image Uploaded</h3>
+        <p style="color: #94a3b8; margin: 0 0 20px 0;">Upload a certificate background image first to use the visual
+            editor.</p>
+        <a href="{% url 'admin:certifications_certificationcourse_change' course.pk %}" class="btn-save">
+            ⬆️ Upload Template Image
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const wrapper = document.getElementById('canvasWrapper');
+        const img = document.getElementById('templateImg');
+        if (!wrapper || !img) return;
+
+        function initEditor() {
+            const imgRect = img.getBoundingClientRect();
+            const displayW = img.clientWidth;
+            const displayH = img.clientHeight;
+            const scaleX = displayW / img.naturalWidth;
+            const scaleY = displayH / img.naturalHeight;
+
+            const elements = {
+                'name': { el: document.getElementById('drag-name'), xInp: 'inp-name-x', yInp: 'inp-name-y' },
+                'course': { el: document.getElementById('drag-course'), xInp: 'inp-course-x', yInp: 'inp-course-y' },
+                'date': { el: document.getElementById('drag-date'), xInp: 'inp-date-x', yInp: 'inp-date-y' },
+                'certid': { el: document.getElementById('drag-certid'), xInp: 'inp-certid-x', yInp: 'inp-certid-y' },
+            };
+
+            // --- Live Style Updates ---
+            const inputs = {
+                fontFamily: document.getElementById('fontFamily'),
+                detailFontFamily: document.getElementById('detailFontFamily'),
+                nameSize: document.getElementById('nameFontSize'),
+                nameColor: document.getElementById('nameColor'),
+                detailSize: document.getElementById('detailFontSize'),
+                detailColor: document.getElementById('detailColor'),
+            };
+
+            function updateStyles() {
+                // Font Family Map (Filenames to CSS names from Google Fonts)
+                const fontMap = {
+                    'Inter.ttf': "'Inter', sans-serif",
+                    'Roboto.ttf': "'Roboto', sans-serif",
+                    'PlayfairDisplay.ttf': "'Playfair Display', serif",
+                    'GreatVibes.ttf': "'Great Vibes', cursive",
+                };
+
+                const selectedFont = inputs.fontFamily.value;
+                const cssFont = fontMap[selectedFont] || 'sans-serif';
+
+                // Sync hidden detail font family (keeping them same for now)
+                if (inputs.detailFontFamily) inputs.detailFontFamily.value = selectedFont;
+
+                // Apply to Name
+                elements['name'].el.style.fontFamily = cssFont;
+                elements['name'].el.style.fontSize = inputs.nameSize.value + 'px';
+                elements['name'].el.style.color = inputs.nameColor.value;
+                elements['name'].el.style.fontWeight = 'bold';
+
+                // Apply to Details
+                ['course', 'date', 'certid'].forEach(key => {
+                    elements[key].el.style.fontFamily = cssFont;
+                    elements[key].el.style.fontSize = inputs.detailSize.value + 'px';
+                    elements[key].el.style.color = inputs.detailColor.value;
+                });
+            }
+
+            // Attach listeners
+            Object.values(inputs).forEach(inp => {
+                if (inp) inp.addEventListener('input', updateStyles);
+            });
+
+            // Initial apply
+            updateStyles();
+
+            // --- Positioning Logic ---
+            // Position elements at their saved coordinates (scaled to display size)
+            Object.keys(elements).forEach(key => {
+                const e = elements[key];
+                const origX = parseInt(document.getElementById(e.xInp).value);
+                const origY = parseInt(document.getElementById(e.yInp).value);
+
+                // Center-align logic
+                const elWidth = e.el.offsetWidth;
+                const displayX = (origX * scaleX) - (elWidth / 2);
+                const displayY = origY * scaleY;
+
+                e.el.style.left = displayX + 'px';
+                e.el.style.top = displayY + 'px';
+            });
+
+            // Drag logic
+            let dragEl = null;
+            let offsetX = 0, offsetY = 0;
+
+            wrapper.addEventListener('mousedown', function (e) {
+                const target = e.target.closest('.draggable-text');
+                if (!target) return;
+
+                dragEl = target;
+                dragEl.classList.add('dragging');
+
+                const rect = dragEl.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!dragEl) return;
+
+                const wrapperRect = wrapper.getBoundingClientRect();
+                let newX = e.clientX - wrapperRect.left - offsetX;
+                let newY = e.clientY - wrapperRect.top - offsetY;
+
+                // Clamp to wrapper bounds
+                newX = Math.max(0, Math.min(newX, displayW - dragEl.offsetWidth));
+                newY = Math.max(0, Math.min(newY, displayH - dragEl.offsetHeight));
+
+                dragEl.style.left = newX + 'px';
+                dragEl.style.top = newY + 'px';
+
+                // Update hidden inputs (convert display coords back to original image coords)
+                const key = dragEl.id.replace('drag-', '');
+                if (elements[key]) {
+                    const centerX = Math.round((newX + dragEl.offsetWidth / 2) / scaleX);
+                    const origY = Math.round(newY / scaleY);
+                    document.getElementById(elements[key].xInp).value = centerX;
+                    document.getElementById(elements[key].yInp).value = origY;
+                }
+            });
+
+            document.addEventListener('mouseup', function () {
+                if (dragEl) {
+                    dragEl.classList.remove('dragging');
+                    dragEl = null;
+                }
+            });
+        }
+
+        if (img.complete) {
+            initEditor();
+        } else {
+            img.addEventListener('load', initEditor);
+        }
+    });
+</script>
+{% endblock %}

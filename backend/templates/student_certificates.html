@@ -1,0 +1,85 @@
+{% extends "student_base.html" %}
+{% load static %}
+
+{% block title %}My Certificates - Inventobots{% endblock %}
+{% block header_title %}My Certificates 🏆{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+
+    <!-- Certificates Grid -->
+    {% if certificates %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for cert_record in certificates %}
+        {% with cert=cert_record.certificate %}
+        <div
+            class="bg-[#1B2436] text-white rounded-2xl border border-slate-800 overflow-hidden group hover:border-yellow-500/50 transition-colors">
+            <!-- Certificate Preview/Icon -->
+            <div class="h-48 bg-slate-800/50 relative flex items-center justify-center overflow-hidden">
+                {% if cert.certificate_image %}
+                <img src="{{ cert.certificate_image.url }}" alt="Certificate for {{ cert.course.name }}"
+                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                {% else %}
+                <i data-lucide="award" class="w-20 h-20 text-yellow-500/50"></i>
+                {% endif %}
+
+                <!-- Overlay Action -->
+                <div
+                    class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-3">
+                    <a href="{% if cert.certificate_image %}{{ cert.certificate_image.url }}{% else %}#{% endif %}"
+                        download
+                        class="bg-white text-slate-900 px-4 py-2 rounded-lg font-bold text-sm transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                        <i data-lucide="download" class="w-4 h-4 inline-block mr-1"></i> Download
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-2">
+                    <h4 class="font-bold text-xl">{{ cert.course.name }}</h4>
+                    {% if cert_record.status == 'Issued' %}
+                    <span class="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">ISSUED</span>
+                    {% else %}
+                    <span class="bg-yellow-500/20 text-yellow-400 text-xs font-bold px-2 py-1 rounded">{{
+                        cert_record.status|upper }}</span>
+                    {% endif %}
+                </div>
+
+                <p class="text-slate-400 text-sm mb-6">Issued on {{ cert.issue_date|date:"F d, Y" }}</p>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-500 uppercase font-semibold">Certificate ID</span>
+                        <span class="text-sm font-mono text-slate-300">{{ cert.certificate_id }}</span>
+                    </div>
+
+                    <a href="{% url 'certifications:result' id=cert.certificate_id %}" target="_blank"
+                        class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-1">
+                        Verify <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div
+        class="flex flex-col items-center justify-center py-20 bg-[#1B2436] rounded-2xl border border-slate-800 text-center">
+        <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+            <i data-lucide="award" class="w-12 h-12 text-slate-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2">No Certificates Yet</h3>
+        <p class="text-slate-400 max-w-md mx-auto mb-8">
+            Complete your courses to earn official certificates. Keep learning and growing!
+        </p>
+        <a href="{% url 'parents:student_courses' %}"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition">
+            Go to My Courses
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

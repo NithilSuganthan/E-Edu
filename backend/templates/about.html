@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}About — Inventobots Academy{% endblock %}
+
+{% block content %}
+<header class="pt-32 pb-16 px-4 bg-slate-50 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-brand-50 to-white/0 pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+        <div class="py-4 md:py-8">
+            <span class="text-sm font-bold tracking-widest text-brand-600 uppercase mb-4 block">Our Story</span>
+            <h1 class="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight">About Inventobots Academy</h1>
+            <p class="mt-6 text-xl text-slate-600 font-medium">Where Young Minds Become <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 font-bold">Innovators,
+                    Builders, and Problem-Solvers</span></p>
+            <p class="mt-4 text-base md:text-lg text-slate-600 leading-relaxed">We blend creativity with
+                technology to give children
+                a hands-on
+                foundation in robotics, coding, and STEM — plus strong academic support.</p>
+            <div class="mt-8 flex gap-4">
+                <a href="tel:+919566128127"
+                    class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all hover:-translate-y-0.5"><i data-lucide="phone" class="w-5 h-5"></i>Call
+                    Now</a>
+                <a href="https://www.google.com/maps/place/Inventobots+Academy/@12.979803,80.1803878,17z"
+                    target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-300 px-6 py-3.5 rounded-xl text-slate-700 font-bold hover:bg-slate-50 transition-all shadow-sm group"><i data-lucide="map-pin" class="w-5 h-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>Visit
+                    on Map</a>
+            </div>
+        </div>
+        <div class="block">
+            <div class="rounded-3xl overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100 bg-white">
+                <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1000"
+                    alt="Kids learning robotics" class="w-full h-72 md:h-96 object-cover">
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="py-16 bg-white min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-12">
+        <section
+            class="md:col-span-2 space-y-16">
+            
+            <div>
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 flex items-center justify-center bg-brand-50 text-brand-600 rounded-xl shadow-sm border border-brand-100">
+                        <i data-lucide="book-open" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-3xl font-display font-bold text-slate-900">Our Story</h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed text-lg">At Inventobots Academy, we believe that education should be more
+                    than just memorizing facts—it should be an adventure in discovery. Located in the heart of Nanganallur,
+                    Chennai, we are a premier educational hub dedicated to empowering the next generation of tech leaders
+                    and creative thinkers.</p>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl shadow-sm border border-indigo-100">
+                        <i data-lucide="target" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-3xl font-display font-bold text-slate-900">Our Mission</h3>
+                </div>
+                <p class="text-slate-600 leading-relaxed text-lg">Our mission is to ignite curiosity and foster a growth
+                    mindset in kids and teens through hands-on learning. We aim to bridge the gap between theoretical knowledge and real-world
+                    application by providing a supportive environment where students feel encouraged to explore, build, and
+                    innovate.</p>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 flex items-center justify-center bg-teal-50 text-teal-600 rounded-xl shadow-sm border border-teal-100">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <h3 id="programs" class="text-3xl font-display font-bold text-slate-900">What We Do</h3>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-6">
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:shadow-md hover:-translate-y-1">
+                        <strong class="text-slate-900 text-lg block mb-2"><i data-lucide="bot" class="w-5 h-5 inline-block mr-2 text-brand-600 align-text-bottom"></i>Robotics & Electronics</strong>
+                        <div class="text-slate-600 text-base leading-relaxed">Students dive into the world of mechanics and circuits, building functional robots from the ground up.</div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:shadow-md hover:-translate-y-1">
+                        <strong class="text-slate-900 text-lg block mb-2"><i data-lucide="code-2" class="w-5 h-5 inline-block mr-2 text-brand-600 align-text-bottom"></i>Coding & Programming</strong>
+                        <div class="text-slate-600 text-base leading-relaxed">We teach the languages of the future, helping students develop logical thinking and computational skills.</div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:shadow-md hover:-translate-y-1">
+                        <strong class="text-slate-900 text-lg block mb-2"><i data-lucide="lightbulb" class="w-5 h-5 inline-block mr-2 text-brand-600 align-text-bottom"></i>STEM & Creative Thinking</strong>
+                        <div class="text-slate-600 text-base leading-relaxed">Our curriculum focuses on 21st-century skills, encouraging students to solve complex problems.</div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:shadow-md hover:-translate-y-1">
+                        <strong class="text-slate-900 text-lg block mb-2"><i data-lucide="graduation-cap" class="w-5 h-5 inline-block mr-2 text-brand-600 align-text-bottom"></i>Expert Academic Tuition</strong>
+                        <div class="text-slate-600 text-base leading-relaxed">Personalized coaching for all subjects (CBSE and State Board), ensuring strong academic outcomes.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl shadow-sm border border-orange-100">
+                        <i data-lucide="star" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-3xl font-display font-bold text-slate-900">Why Choose Us?</h3>
+                </div>
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <li class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                        <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 mt-1"><i data-lucide="check" class="w-5 h-5"></i></div>
+                        <div>
+                            <strong class="text-slate-900 text-lg block">Learning by Doing</strong>
+                            <div class="text-slate-600 mt-1">90% project-based tech programs for practical experience.</div>
+                        </div>
+                    </li>
+                    <li class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                        <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 mt-1"><i data-lucide="calendar" class="w-5 h-5"></i></div>
+                        <div>
+                            <strong class="text-slate-900 text-lg block">Flexible Batches</strong>
+                            <div class="text-slate-600 mt-1">Weekday & weekend sessions to suit schedules.</div>
+                        </div>
+                    </li>
+                    <li class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                        <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 mt-1"><i data-lucide="heart" class="w-5 h-5"></i></div>
+                        <div>
+                            <strong class="text-slate-900 text-lg block">Social Responsibility</strong>
+                            <div class="text-slate-600 mt-1">Sponsoring initiatives like free coaching for diverse students.</div>
+                        </div>
+                    </li>
+                    <li class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                        <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 mt-1"><i data-lucide="zap" class="w-5 h-5"></i></div>
+                        <div>
+                            <strong class="text-slate-900 text-lg block">Inspiring Atmosphere</strong>
+                            <div class="text-slate-600 mt-1">Fun, engaging learning environment for future innovators.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Sidebar / Contact -->
+        <aside>
+            <div class="sticky top-24 space-y-8">
+                <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+                    <div class="flex items-start gap-5">
+                        <div class="w-14 h-14 rounded-xl bg-brand-100 flex items-center justify-center text-brand-700 shrink-0">
+                            <i data-lucide="map-pin" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-slate-900">Visit Us</h4>
+                            <address class="not-italic text-slate-600 mt-2 text-base leading-relaxed">No. 9, Magizhamphoo
+                                Maaligai, 3rd Floor
+                                (Terrace)<br>M.G.R Road, Nanganallur, Chennai - 600061</address>
+                        </div>
+                    </div>
+
+                    <div>
+                        <a href="tel:+919566128127"
+                            class="inline-flex items-center justify-center w-full gap-2 bg-brand-600 hover:bg-brand-500 text-white px-6 py-4 rounded-xl font-bold transition-all shadow-sm hover:-translate-y-0.5"><i data-lucide="phone" class="w-5 h-5"></i> Call: +91 95661 28127</a>
+                    </div>
+
+                    <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                        <iframe src="https://www.google.com/maps?q=Inventobots+Academy+Nanganallur&output=embed" class="w-full h-48"
+                            loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200">
+                        <h4 class="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4 text-center">Connect With Us</h4>
+                        <div class="flex items-center justify-center gap-6">
+                            <a href="https://www.instagram.com/inventobotsacademy/"
+                                class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-200 transition-all hover:shadow-sm"><i
+                                    data-lucide="instagram" class="w-5 h-5"></i></a>
+                            <a href="https://www.google.com/maps/place/Inventobots+Academy/@12.979803,80.1803878,17z" target="_blank"
+                                rel="noopener noreferrer"
+                                class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-200 transition-all hover:shadow-sm"><i
+                                    data-lucide="map" class="w-5 h-5"></i></a>
+                            <a href="https://www.facebook.com/p/Inventobots-Academy-61578379954667/"
+                                class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:border-brand-200 transition-all hover:shadow-sm"><i
+                                    data-lucide="facebook" class="w-5 h-5"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Legals Section -->
+    <div class="max-w-6xl mx-auto px-4 mt-20">
+        <section id="legals"
+            class="bg-slate-50 p-8 md:p-12 rounded-3xl border border-slate-100 scroll-mt-32">
+            <h2 class="text-3xl font-display font-bold mb-10 text-slate-900 border-b border-slate-200 pb-4">Legals</h2>
+
+            <div id="terms" class="mb-12 scroll-mt-32">
+                <h3 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-3"><i data-lucide="file-text" class="w-6 h-6 text-brand-500"></i> Terms & Conditions</h3>
+                <div class="text-slate-600 space-y-4 leading-relaxed text-lg pl-9 bg-white p-6 rounded-2xl border border-slate-100">
+                    <p>Welcome to Inventobots Academy. By accessing our website and services, you agree to be bound by the following terms and conditions.</p>
+                    <p><strong class="text-slate-900">1. Enrollment & Fees:</strong> Course fees must be paid in advance. Enrollment is confirmed only upon receipt of payment. Fees are non-transferable.</p>
+                    <p><strong class="text-slate-900">2. Student Conduct:</strong> We expect all students to behave respectfully towards instructors and peers. Disruptive behavior may result in suspension from the program without refund.</p>
+                    <p><strong class="text-slate-900">3. Intellectual Property:</strong> All course materials, including code snippets, diagrams, and videos, are the property of Inventobots Academy and are for personal use only.</p>
+                    <p><strong class="text-slate-900">4. Limitation of Liability:</strong> Inventobots Academy is not liable for any personal injury or damage to personal property occurring at our physical centers, though we take all reasonable safety precautions.</p>
+                </div>
+            </div>
+
+            <div id="privacy" class="scroll-mt-32">
+                <h3 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-3"><i data-lucide="shield" class="w-6 h-6 text-indigo-500"></i> Privacy Policy</h3>
+                <div class="text-slate-600 space-y-4 leading-relaxed text-lg pl-9 bg-white p-6 rounded-2xl border border-slate-100">
+                    <p>Your privacy is important to us. This policy outlines how we collect, use, and protect your personal information.</p>
+                    <p><strong class="text-slate-900">Information We Collect:</strong> We collect student names, parent contact details (email, phone), and age/grade information solely for the purpose of enrollment and communication.</p>
+                    <p><strong class="text-slate-900">How We Use Your Data:</strong> Your data is used to manage course schedules, send progress reports, and notify you of upcoming events. We do not sell your data to third parties.</p>
+                    <p><strong class="text-slate-900">Media Consent:</strong> We may take photos or videos of classes for promotional purposes. You can opt-out of this by writing to us at <a href="mailto:inventobotsacademy@gmail.com" class="text-brand-600 font-bold hover:underline">inventobotsacademy@gmail.com</a>.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

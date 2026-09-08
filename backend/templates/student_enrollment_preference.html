@@ -1,0 +1,90 @@
+{% extends 'student_base.html' %}
+
+{% block title %}Enrollment Preference | Inventobots{% endblock %}
+{% block header_title %}Enrollment Options{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto pt-10">
+    <div
+        class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl overflow-hidden">
+
+        <!-- Header -->
+        <div class="p-8 pb-0 text-center">
+            <div
+                class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600 dark:text-blue-400">
+                <i data-lucide="layers" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-2">Choose Your Learning Mode
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+                You are about to enroll in <span class="font-bold text-slate-800 dark:text-white">{{ course.title
+                    }}</span>.
+                Please select how you would like to attend this course.
+            </p>
+        </div>
+
+        <!-- Options -->
+        <form method="POST" action="{% url 'parents:enroll_student_core_confirm' course.id %}" class="p-8">
+            {% csrf_token %}
+
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Online Option -->
+                <label class="relative cursor-pointer group">
+                    <input type="radio" name="mode" value="Online" class="peer sr-only" checked>
+                    <div
+                        class="p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 peer-checked:border-blue-600 dark:peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/10 transition-all h-full flex flex-col items-center text-center">
+                        <div
+                            class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
+                            <i data-lucide="monitor-play" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Online Live</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Attend live classes via Zoom from the comfort of your home. Access recordings anytime.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute top-4 right-4 text-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity">
+                        <i data-lucide="check-circle-2" class="w-6 h-6 fill-blue-600 text-white"></i>
+                    </div>
+                </label>
+
+                <!-- Offline Option -->
+                <label class="relative cursor-pointer group">
+                    <input type="radio" name="mode" value="Offline" class="peer sr-only">
+                    <div
+                        class="p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-purple-400 dark:hover:border-purple-500 peer-checked:border-purple-600 dark:peer-checked:border-purple-500 peer-checked:bg-purple-50 dark:peer-checked:bg-purple-900/10 transition-all h-full flex flex-col items-center text-center">
+                        <div
+                            class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4">
+                            <i data-lucide="users" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Offline Campus</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Attend physical classes at our campus. Hands-on experience with equipment.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute top-4 right-4 text-purple-600 opacity-0 peer-checked:opacity-100 transition-opacity">
+                        <i data-lucide="check-circle-2" class="w-6 h-6 fill-purple-600 text-white"></i>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-center">
+                <a href="{% url 'parents:student_browse_courses' %}"
+                    class="w-full md:w-auto px-8 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-center">
+                    Cancel
+                </a>
+                <button type="submit"
+                    class="w-full md:w-auto px-10 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105">
+                    Proceed to Payment
+                </button>
+            </div>
+
+            <p class="text-xs text-center text-slate-400 mt-6">
+                By proceeding, you agree to our terms of service and enrollment policies.
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

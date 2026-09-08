@@ -1,0 +1,314 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Login — Inventobots Academy</title>
+    <link rel="icon" href="{% static 'Logo.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0a0e1a;
+            min-height: 100vh;
+        }
+
+        /* === Animated Mesh Gradient Background === */
+        .mesh-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 10% 90%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 60% at 85% 20%, rgba(139, 92, 246, 0.10) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 50% 50%, rgba(79, 70, 229, 0.06) 0%, transparent 60%);
+        }
+
+        .mesh-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px, 80px 80px;
+        }
+
+        /* === Glass Card === */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow:
+                0 0 0 1px rgba(99, 102, 241, 0.05),
+                0 20px 60px -15px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        /* === Inputs === */
+        .input-wrap {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-wrap:focus-within {
+            transform: translateY(-1px);
+        }
+        .input-wrap:focus-within .input-glow {
+            opacity: 1;
+        }
+        .input-glow {
+            position: absolute; inset: -1px; border-radius: 0.75rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
+            opacity: 0; transition: opacity 0.3s ease; z-index: -1;
+            filter: blur(1px);
+        }
+
+        /* === Button === */
+        .btn-login {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+            background-size: 200% auto;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+        }
+        .btn-login::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        .btn-login:hover::before { transform: translateX(100%); }
+        .btn-login:hover {
+            background-position: right center;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3), 0 10px 40px -10px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* === Floating Orbs === */
+        @keyframes float-slow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -30px) scale(1.05); }
+            50% { transform: translate(-15px, -50px) scale(0.95); }
+            75% { transform: translate(25px, -20px) scale(1.02); }
+        }
+        @keyframes float-med {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-30px, 20px) scale(1.08); }
+            66% { transform: translate(20px, -30px) scale(0.92); }
+        }
+        .orb-1 { animation: float-slow 12s ease-in-out infinite; }
+        .orb-2 { animation: float-med 10s ease-in-out infinite 2s; }
+        .orb-3 { animation: float-slow 14s ease-in-out infinite 4s; }
+
+        /* === Fade In === */
+        .fade-up {
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; transform: translateY(24px);
+        }
+        .fade-up-delay { animation-delay: 0.15s; }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === Credential Card === */
+        .cred-card {
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            backdrop-filter: blur(8px);
+        }
+        .cred-card code {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            color: #a5b4fc;
+            user-select: all;
+            cursor: pointer;
+        }
+
+        /* === Gradient Text === */
+        .text-gradient {
+            background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 50%, #8b5cf6 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* === Google Button === */
+        .btn-google {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            transition: all 0.3s ease;
+        }
+        .btn-google:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(148, 163, 184, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px -5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center justify-center p-4 relative overflow-x-hidden text-slate-300 selection:bg-indigo-900 selection:text-indigo-200">
+
+    <!-- Animated Background -->
+    <div class="mesh-bg"></div>
+
+    <!-- Floating Orbs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="orb-1 absolute -top-20 -left-20 w-[500px] h-[500px] bg-indigo-500/[0.07] rounded-full blur-[100px]"></div>
+        <div class="orb-2 absolute top-1/3 -right-32 w-[400px] h-[400px] bg-violet-500/[0.06] rounded-full blur-[80px]"></div>
+        <div class="orb-3 absolute -bottom-20 left-1/3 w-[450px] h-[450px] bg-purple-500/[0.05] rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-full max-w-[440px] relative z-10 my-auto pt-8">
+
+        <!-- Logo & Title -->
+        <div class="text-center mb-8 fade-up">
+            <div class="inline-flex items-center justify-center p-3 bg-slate-800/60 rounded-2xl border border-slate-700/50 mb-6 group hover:border-indigo-500/30 transition-all duration-500 shadow-lg shadow-black/20">
+                <img src="{% static 'Logo.png' %}" alt="Inventobots Academy" class="h-10 w-auto group-hover:scale-105 transition-transform duration-300">
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gradient tracking-tight mb-2">Parent Portal</h1>
+            <p class="text-slate-400 font-medium text-[15px]">Welcome back! Please enter your details.</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-card rounded-[1.75rem] p-8 relative overflow-hidden fade-up fade-up-delay">
+
+            <!-- Top accent line -->
+            <div class="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent"></div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="mb-7 space-y-3">
+                {% for message in messages %}
+                <div class="flex items-start gap-3 p-4 rounded-xl text-sm font-semibold
+                    {% if message.tags == 'error' %}bg-red-500/10 text-red-400 border border-red-500/20
+                    {% else %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% endif %}">
+                    {% if message.tags == 'error' %}
+                    <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                    {% else %}
+                    <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                    {% endif %}
+                    <span class="leading-relaxed">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Form -->
+            <form method="POST" action="{% url 'parents:login' %}" class="space-y-5">
+                {% csrf_token %}
+
+                <div class="space-y-2">
+                    <label for="username" class="text-sm font-bold text-slate-400 ml-1 block">Email / Username</label>
+                    <div class="relative group input-wrap">
+                        <div class="input-glow"></div>
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                        </div>
+                        <input type="text" name="username" id="username" required
+                            class="w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-slate-700/60 rounded-xl
+                            focus:bg-slate-800/80 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50
+                            outline-none transition-all placeholder:text-slate-600 text-white font-medium"
+                            placeholder="parent@example.com">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="password" class="text-sm font-bold text-slate-400 ml-1 block">Password</label>
+                    <div class="relative group input-wrap">
+                        <div class="input-glow"></div>
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                            <i data-lucide="lock" class="w-5 h-5"></i>
+                        </div>
+                        <input type="password" name="password" id="password" required
+                            class="w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-slate-700/60 rounded-xl
+                            focus:bg-slate-800/80 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50
+                            outline-none transition-all placeholder:text-slate-600 text-white font-medium tracking-wider"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1 pb-1">
+                    <label class="flex items-center cursor-pointer group">
+                        <input type="checkbox" class="w-4 h-4 text-indigo-500 bg-slate-800 border-slate-600 rounded focus:ring-indigo-500/30 cursor-pointer">
+                        <span class="ml-2 text-sm text-slate-500 group-hover:text-slate-300 font-medium transition-colors">Remember me</span>
+                    </label>
+                    <span class="text-xs text-slate-600">Forgot? Contact academy.</span>
+                </div>
+
+                <div class="pt-1">
+                    <button type="submit" class="w-full btn-login text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 group">
+                        <i data-lucide="log-in" class="w-5 h-5 group-hover:-translate-y-0.5 transition-transform"></i>
+                        <span class="text-[15px] tracking-wide">Sign In</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Divider -->
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-700/50"></div>
+                </div>
+                <div class="relative flex justify-center text-sm font-medium">
+                    <span class="px-3 bg-[rgba(15,23,42,0.7)] text-slate-500">Or continue with</span>
+                </div>
+            </div>
+
+            <!-- Google OAuth Button -->
+            <a href="{% provider_login_url 'google' %}" class="w-full btn-google text-slate-300 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3">
+                <svg viewBox="0 0 24 24" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Google
+            </a>
+
+            <!-- Test Credentials Hint -->
+            <div class="cred-card rounded-xl p-4 mt-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="key" class="w-4 h-4 text-indigo-400"></i>
+                    <span class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Test Credentials</span>
+                </div>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Username:</span>
+                        <code>testparent</code>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Password:</span>
+                        <code>password123</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Links -->
+        <div class="mt-8 text-center space-y-5 fade-up" style="animation-delay: 0.3s;">
+            <p class="text-[15px] text-slate-500 font-medium flex items-center justify-center gap-2">
+                New to Inventobots?
+                <a href="/about/" class="inline-flex items-center gap-1 font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+                    Learn more →
+                </a>
+            </p>
+
+            <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors group">
+                <div class="p-1.5 rounded-full bg-slate-800 group-hover:bg-slate-700 border border-slate-700/50 transition-colors">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i>
+                </div>
+                Back to Homepage
+            </a>
+        </div>
+
+        <p class="text-center text-xs font-medium text-slate-600 mt-10 mb-4">
+            &copy; {% now "Y" %} Inventobots Academy. All rights reserved.
+        </p>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

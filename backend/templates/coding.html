@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Coding Wizards | Inventobots Academy{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section
+    class="pt-32 pb-16 px-4 bg-slate-50 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-indigo-50 to-white/0 pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+        <span
+            class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest inline-block shadow-sm mb-6">Future
+            Ready</span>
+        <h1 class="text-4xl md:text-6xl font-display font-bold text-slate-900 leading-tight">
+            Coding <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Wizards</span>
+        </h1>
+        <p
+            class="text-lg md:text-xl text-slate-600 mt-6 max-w-2xl mx-auto leading-relaxed">
+            Unlock the power of programming. From block manipulation to Python scripting, build the software that
+            powers the future.
+        </p>
+    </div>
+</section>
+
+<!-- Coding Courses Grid -->
+<section class="py-16 bg-white min-h-screen"
+    x-data="{ courses: [], loading: true }" x-init="fetch('http://127.0.0.1:8000/api/courses/?category=CODING')
+        .then(response => response.json())
+        .then(data => { courses = data; loading = false; })
+        .catch(error => { console.error('Error:', error); loading = false; })">
+
+    <div class="max-w-[1400px] mx-auto px-6 sm:px-8">
+        <div class="flex items-center gap-4 mb-10">
+            <div class="w-16 h-16 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm border border-indigo-100">
+                <i data-lucide="code-2" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-display font-bold text-slate-900">Available Coding Programs</h2>
+                <p class="text-slate-500 mt-1">Select a program to start learning.</p>
+            </div>
+        </div>
+
+        <div x-show="loading" class="text-center py-20 flex flex-col items-center">
+            <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-indigo-600 mb-4"></i>
+            <p class="text-lg text-slate-500 font-medium">Loading courses...</p>
+        </div>
+
+        <div x-show="!loading && courses.length === 0"
+            class="text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+                <i data-lucide="code" class="w-10 h-10 text-slate-300"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900">No Courses Yet</h3>
+            <p class="text-slate-500 mt-2 text-lg">Check back soon for our upcoming coding modules!</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" x-show="!loading && courses.length > 0">
+            <template x-for="course in courses" :key="course.id">
+                <div
+                    class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100 flex flex-col group cursor-pointer" @click="window.location.href='/courses/'">
+                    <div class="relative overflow-hidden aspect-[4/3] bg-slate-100">
+                        <img :src="course.image" :alt="course.title"
+                            class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
+                        <div
+                            class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-slate-900 shadow-sm border border-slate-100">
+                            Coding</div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-bold mb-3 text-slate-900 group-hover:text-indigo-600 transition-colors"
+                            x-text="course.title">
+                        </h3>
+                        <p class="text-slate-600 mb-8 flex-grow text-base leading-relaxed line-clamp-2"
+                            x-text="course.description"></p>
+
+                        <div
+                            class="flex justify-between items-center mt-auto pt-6 border-t border-slate-100">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">Course
+                                    Fee</span>
+                                <span class="text-2xl font-bold text-slate-900"
+                                    x-text="'₹' + course.price"></span>
+                            </div>
+                            <a href="/courses/"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm hover:-translate-y-0.5 flex items-center gap-2">
+                                View <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</section>
+{% endblock %}

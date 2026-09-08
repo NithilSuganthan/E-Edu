@@ -1,0 +1,89 @@
+/* Professional Admin Theme */
+
+/* Import a nice font if possible, or use system defaults stack */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Login Page Specifics */
+body.login {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* The login box container */
+body.login .login-box {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: none;
+    padding: 30px;
+    width: 400px !important; /* Enforce a good width */
+}
+
+/* Logo styling in login */
+body.login .login-logo {
+    margin-bottom: 20px;
+}
+
+body.login .login-logo img {
+    max-height: 80px; /* Adjust based on actual logo aspect ratio */
+    width: auto;
+}
+
+body.login .login-logo a {
+    color: #333;
+    font-weight: 600;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+/* Form fields */
+body.login .form-control {
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    padding: 10px 15px;
+    height: auto;
+    font-size: 15px;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+}
+
+body.login .form-control:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    background-color: #fff;
+}
+
+/* Submit button */
+body.login .btn-primary {
+    background-color: #2c3e50; /* distinct professional color */
+    border-color: #2c3e50;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    width: 100%;
+    margin-top: 15px;
+    transition: background-color 0.2s;
+}
+
+body.login .btn-primary:hover {
+    background-color: #34495e;
+    border-color: #34495e;
+}
+
+/* Sidebar and general admin tweaks (optional, but good for consistency) */
+.main-sidebar {
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.brand-link {
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+}

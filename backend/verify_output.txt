@@ -1,0 +1,9 @@
+Verifying student login...
+User 'teststudent' exists. ID: 28
+Is active: True
+Has usable password: True
+
+AUTHENTICATION RESULT: teststudent
+
+>>> Authentication SUCCESSFUL. <<<
+Student profile found for user: Junior Doe (ID: 23)

@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% block title %}All Courses | Inventobots Academy{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section
+    class="pt-32 pb-16 px-4 bg-slate-50 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-brand-50 to-white/0 pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+        <span class="text-sm font-bold tracking-widest text-brand-600 uppercase mb-4 block">Programs</span>
+        <h1 class="text-4xl md:text-6xl font-display font-bold text-slate-900 leading-tight">
+            Explore Our <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">Courses</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-600 mt-6 max-w-2xl mx-auto leading-relaxed">
+            Discover the perfect program for your child's growth. We offer hands-on, expert-led courses across multiple disciplines.
+        </p>
+    </div>
+</section>
+
+<!-- Courses Categories -->
+<main class="py-16 bg-white space-y-24" x-data="{ 
+        courses: [], 
+        loading: true, 
+        selectedCourse: null,
+        getWhatsappLink(course) {
+            const phone = '919566128127'; 
+            const text = `Hi, I’m interested in the ${course.title}. Please share payment details and further information.`;
+            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        }
+    }" x-init="fetch('http://127.0.0.1:8000/api/courses/')
+        .then(response => response.json())
+        .then(data => { courses = data; loading = false; })
+        .catch(error => { console.error('Error:', error); loading = false; })">
+
+    <!-- Loading State -->
+    <div x-show="loading" class="text-center py-20 flex flex-col items-center">
+        <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-brand-600 mb-4"></i>
+        <p class="text-lg text-slate-500 font-medium">Loading courses...</p>
+    </div>
+
+    <!-- Content -->
+    <template x-if="!loading">
+        <div class="max-w-[1400px] mx-auto px-6 sm:px-8 space-y-24">
+
+            <!-- Robotics Masterclass -->
+            <section>
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="w-16 h-16 flex items-center justify-center bg-brand-50 text-brand-600 rounded-2xl shadow-sm border border-brand-100">
+                        <i data-lucide="bot" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-display font-bold text-slate-900">Robotics Masterclass</h2>
+                        <p class="text-slate-500 mt-1">Hands-on engineering and smart circuits.</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="course in courses.filter(c => c.category === 'ROBOTICS')" :key="course.id">
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 flex flex-col transition-all duration-300 group cursor-pointer" @click="selectedCourse = course">
+                            <div class="relative overflow-hidden aspect-[4/3] bg-slate-100">
+                                <img :src="course.image" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-slate-900 shadow-sm border border-slate-100">
+                                    <span x-text="'₹' + course.price"></span>
+                                </div>
+                            </div>
+                            <div class="p-8 flex flex-col flex-grow">
+                                <h3 class="text-2xl font-bold mb-3 text-slate-900 group-hover:text-brand-600 transition-colors" x-text="course.title"></h3>
+                                <p class="text-slate-600 text-base mb-8 flex-grow line-clamp-2 leading-relaxed" x-text="course.description"></p>
+                                <button class="w-full bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-200 text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="courses.filter(c => c.category === 'ROBOTICS').length === 0"
+                        class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p class="text-slate-500 text-lg">No robotics courses available currently.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Coding Wizards -->
+            <section>
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="w-16 h-16 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm border border-indigo-100">
+                        <i data-lucide="code-2" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-display font-bold text-slate-900">Coding Wizards</h2>
+                        <p class="text-slate-500 mt-1">Programming logic and app development.</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="course in courses.filter(c => c.category === 'CODING')" :key="course.id">
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 flex flex-col transition-all duration-300 group cursor-pointer" @click="selectedCourse = course">
+                            <div class="relative overflow-hidden aspect-[4/3] bg-slate-100">
+                                <img :src="course.image" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-slate-900 shadow-sm border border-slate-100">
+                                    <span x-text="'₹' + course.price"></span>
+                                </div>
+                            </div>
+                            <div class="p-8 flex flex-col flex-grow">
+                                <h3 class="text-2xl font-bold mb-3 text-slate-900 group-hover:text-indigo-600 transition-colors" x-text="course.title"></h3>
+                                <p class="text-slate-600 text-base mb-8 flex-grow line-clamp-2 leading-relaxed" x-text="course.description"></p>
+                                <button class="w-full bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-200 text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="courses.filter(c => c.category === 'CODING').length === 0"
+                        class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p class="text-slate-500 text-lg">No coding courses available currently.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Abacus & Mental Maths -->
+            <section>
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="w-16 h-16 flex items-center justify-center bg-teal-50 text-teal-600 rounded-2xl shadow-sm border border-teal-100">
+                        <i data-lucide="calculator" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-display font-bold text-slate-900">Abacus & Mental Maths</h2>
+                        <p class="text-slate-500 mt-1">Cognitive boost and numeric speed.</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="course in courses.filter(c => c.category === 'ABACUS')" :key="course.id">
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 flex flex-col transition-all duration-300 group cursor-pointer" @click="selectedCourse = course">
+                            <div class="relative overflow-hidden aspect-[4/3] bg-slate-100">
+                                <img :src="course.image" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-slate-900 shadow-sm border border-slate-100">
+                                    <span x-text="'₹' + course.price"></span>
+                                </div>
+                            </div>
+                            <div class="p-8 flex flex-col flex-grow">
+                                <h3 class="text-2xl font-bold mb-3 text-slate-900 group-hover:text-teal-600 transition-colors" x-text="course.title"></h3>
+                                <p class="text-slate-600 text-base mb-8 flex-grow line-clamp-2 leading-relaxed" x-text="course.description"></p>
+                                <button class="w-full bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-200 text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="courses.filter(c => c.category === 'ABACUS').length === 0"
+                        class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p class="text-slate-500 text-lg">No abacus courses available currently.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Remaining categories formatted identically -->
+            <!-- Academic Excellence -->
+            <section>
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="w-16 h-16 flex items-center justify-center bg-orange-50 text-orange-600 rounded-2xl shadow-sm border border-orange-100">
+                        <i data-lucide="book-open" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-display font-bold text-slate-900">Academic Excellence</h2>
+                        <p class="text-slate-500 mt-1">School curriculum and advanced coaching.</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="course in courses.filter(c => c.category === 'ACADEMIC')" :key="course.id">
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 flex flex-col transition-all duration-300 group cursor-pointer" @click="selectedCourse = course">
+                            <div class="relative overflow-hidden aspect-[4/3] bg-slate-100">
+                                <img :src="course.image" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-bold text-slate-900 shadow-sm border border-slate-100">
+                                    <span x-text="'₹' + course.price"></span>
+                                </div>
+                            </div>
+                            <div class="p-8 flex flex-col flex-grow">
+                                <h3 class="text-2xl font-bold mb-3 text-slate-900 group-hover:text-orange-600 transition-colors" x-text="course.title"></h3>
+                                <p class="text-slate-600 text-base mb-8 flex-grow line-clamp-2 leading-relaxed" x-text="course.description"></p>
+                                <button class="w-full bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-200 text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="courses.filter(c => c.category === 'ACADEMIC').length === 0"
+                        class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p class="text-slate-500 text-lg">No academic courses available currently.</p>
+                    </div>
+                </div>
+            </section>
+			
+            <!-- For other categories, applying the same clean style template as above... -->
+			
+        </div>
+    </template>
+
+    <!-- Professional Detail Modal -->
+    <div x-show="selectedCourse"
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-md"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
+
+        <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200"
+            @click.away="selectedCourse = null" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-8">
+
+            <!-- Modal Header -->
+            <div class="relative h-56 sm:h-72 bg-slate-100 flex-shrink-0">
+                <img :src="selectedCourse?.image" :alt="selectedCourse?.title" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+                <button @click="selectedCourse = null"
+                    class="absolute top-4 right-4 bg-white/20 hover:bg-white text-white hover:text-slate-900 p-2.5 rounded-full backdrop-blur-md transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="absolute bottom-8 left-8 right-8">
+                    <span class="px-3 py-1 bg-brand-600 text-white text-xs font-bold rounded-full mb-3 inline-block uppercase tracking-wider"
+                        x-text="selectedCourse?.category"></span>
+                    <h3 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight" x-text="selectedCourse?.title"></h3>
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-8 overflow-y-auto custom-scrollbar space-y-8">
+                <!-- Key Details -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <div class="text-center">
+                        <p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Price</p>
+                        <p class="font-bold text-slate-900 text-xl" x-text="'₹' + selectedCourse?.price"></p>
+                    </div>
+                    <div class="text-center border-l border-slate-200">
+                        <p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Duration</p>
+                        <p class="font-bold text-slate-900 text-lg" x-text="selectedCourse?.duration || 'N/A'"></p>
+                    </div>
+                    <div class="text-center border-l border-slate-200">
+                        <p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Mode</p>
+                        <p class="font-bold text-slate-900 text-lg" x-text="selectedCourse?.mode || 'Online'"></p>
+                    </div>
+                    <div class="text-center border-l border-slate-200">
+                        <p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-1">Start Date</p>
+                        <p class="font-bold text-slate-900 text-lg" x-text="selectedCourse?.start_date || 'Flexible'"></p>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">About this Course</h4>
+                    <p class="text-slate-600 leading-relaxed text-lg" x-text="selectedCourse?.description"></p>
+                </div>
+
+                <!-- Syllabus -->
+                <template x-if="selectedCourse?.syllabus">
+                    <div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">What You'll Learn</h4>
+                        <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                            <p class="text-slate-700 whitespace-pre-line leading-relaxed" x-text="selectedCourse?.syllabus"></p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Certification -->
+                <template x-if="selectedCourse?.certification_details">
+                    <div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Certification</h4>
+                        <div class="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-100">
+                            <i data-lucide="award" class="text-amber-500 w-6 h-6 flex-shrink-0 mt-0.5"></i>
+                            <p class="text-slate-700" x-text="selectedCourse?.certification_details"></p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Notes -->
+                <template x-if="selectedCourse?.notes">
+                    <div class="text-sm text-slate-500 italic bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200">
+                        <span class="font-bold block mb-1">Note:</span> <span x-text="selectedCourse?.notes"></span>
+                    </div>
+                </template>
+
+            </div>
+
+            <!-- Footer / CTA -->
+            <div class="p-6 border-t border-slate-100 bg-white z-10 flex flex-col sm:flex-row gap-4">
+                <a :href="'/parents/student/enroll-now/' + selectedCourse?.id + '/'"
+                    class="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold py-4 px-6 rounded-xl transition-all border border-slate-200">
+                    <i data-lucide="play-circle" class="w-5 h-5 text-slate-500"></i>
+                    <span>Free Trial Preview</span>
+                </a>
+                
+                <a :href="getWhatsappLink(selectedCourse)" target="_blank"
+                    class="flex-1 flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-sm hover:-translate-y-0.5">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                    <span>Enquire & Enroll</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
