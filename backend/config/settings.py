@@ -244,6 +244,8 @@ SESSION_COOKIE_SECURE = not DEBUG
 # Defaults to on when DEBUG=False; set SECURE_SSL_REDIRECT=False to simulate
 # production mode over plain HTTP locally.
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', str(not DEBUG)) == 'True'
+# Trust Render's load balancer X-Forwarded-Proto header so Django sees HTTPS requests correctly
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 X_FRAME_OPTIONS = 'DENY'
 
 JAZZMIN_SETTINGS = {
