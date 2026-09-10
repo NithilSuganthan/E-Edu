@@ -40,17 +40,25 @@ import os
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w4i1wehn)hnc*l@&z+(zo+kny$k0mu1udux*u$kcu*mh*7%o1j')
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+# ALLOWED_HOSTS: include localhost for development, and any onrender.com hostname
+# provided via the ALLOWED_HOSTS env var.  When running on Render the hostname
+# is *always* <app>.onrender.com, so we include that as a safe fallback.
+_raw_hosts = os.getenv('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()] if _raw_hosts else ['127.0.0.1', 'localhost']
 
 # Trusted origins for CSRF protection behind HTTPS proxies (comma-separated,
-# e.g. https://inventobots.onrender.com)
+# e.g. https://inventobots.onrender.com).
+# Auto-detect Render hostname from ALLOWED_HOSTS when not explicitly set.
 CSRF_TRUSTED_ORIGINS = [
     o for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o
 ]
+if not CSRF_TRUSTED_ORIGINS:
+    for _host in ALLOWED_HOSTS:
+        if _host.endswith('.onrender.com'):
+            CSRF_TRUSTED_ORIGINS.append(f'https://{_host}')
 
 
 
@@ -140,7 +148,7 @@ else:
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', 'inventobots_db'),
             'USER': os.getenv('DB_USER', 'inventobots_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', '@inventobots123'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', '127.0.0.1'),
             'PORT': os.getenv('DB_PORT', '5432'),
             'CONN_MAX_AGE': 60,
@@ -220,7 +228,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 if not (BASE_DIR / 'static').exists():
     STATICFILES_DIRS = []
@@ -241,9 +249,10 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
-# Defaults to on when DEBUG=False; set SECURE_SSL_REDIRECT=False to simulate
-# production mode over plain HTTP locally.
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', str(not DEBUG)) == 'True'
+# SECURE_SSL_REDIRECT: defaults to True in production (DEBUG=False).
+# When behind Render's load balancer, SECURE_PROXY_SSL_HEADER ensures Django
+# recognises the original HTTPS request so it does NOT create a redirect loop.
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', str(not DEBUG)).lower() == 'true'
 # Trust Render's load balancer X-Forwarded-Proto header so Django sees HTTPS requests correctly
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 X_FRAME_OPTIONS = 'DENY'
@@ -280,3 +289,53 @@ JAZZMIN_SETTINGS = {
 # Razorpay Configuration
 RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_YOUR_KEY_HERE')
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'YOUR_SECRET_HERE')
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ==============================================================================
+# TEMPORARY DIAGNOSTIC CONFIGURATION (TO BE REMOVED AFTER ROOT-CAUSE IDENTIFICATION)
+# Directs Django request errors and tracebacks to standard error for Render logs.
+# Safe: Logs server-side only; does not expose secrets or debug pages to visitors.
+# ==============================================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'diagnostic_formatter': {
+            'format': (
+                '\n'
+                '==================== [DJANGO EXCEPTION DIAGNOSTIC START] ====================\n'
+                'Timestamp: %(asctime)s\n'
+                'Logger: %(name)s | Level: %(levelname)s\n'
+                'Message: %(message)s\n'
+                '----------------------------------------------------------------------------'
+            ),
+        },
+    },
+    'handlers': {
+        'render_console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'diagnostic_formatter',
+            'stream': 'ext://sys.stderr',
+        },
+    },
+    'root': {
+        'handlers': ['render_console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['render_console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['render_console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+# ==============================================================================
+
