@@ -142,13 +142,22 @@ if os.getenv('DATABASE_URL'):
             'OPTIONS': {'sslmode': os.getenv('DB_SSLMODE', 'require')},
         }
     }
+elif os.getenv('RENDER') or os.getenv('USE_SQLITE', 'False').lower() == 'true':
+    # Fallback on Render when no managed PostgreSQL database is linked.
+    # Allows the demo site to boot and serve pages immediately using SQLite.
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', 'inventobots_db'),
             'USER': os.getenv('DB_USER', 'inventobots_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'PASSWORD': os.getenv('DB_PASSWORD', '@inventobots123'),
             'HOST': os.getenv('DB_HOST', '127.0.0.1'),
             'PORT': os.getenv('DB_PORT', '5432'),
             'CONN_MAX_AGE': 60,
@@ -293,49 +302,4 @@ RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'YOUR_SECRET_HERE')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ==============================================================================
-# TEMPORARY DIAGNOSTIC CONFIGURATION (TO BE REMOVED AFTER ROOT-CAUSE IDENTIFICATION)
-# Directs Django request errors and tracebacks to standard error for Render logs.
-# Safe: Logs server-side only; does not expose secrets or debug pages to visitors.
-# ==============================================================================
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'diagnostic_formatter': {
-            'format': (
-                '\n'
-                '==================== [DJANGO EXCEPTION DIAGNOSTIC START] ====================\n'
-                'Timestamp: %(asctime)s\n'
-                'Logger: %(name)s | Level: %(levelname)s\n'
-                'Message: %(message)s\n'
-                '----------------------------------------------------------------------------'
-            ),
-        },
-    },
-    'handlers': {
-        'render_console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'diagnostic_formatter',
-            'stream': 'ext://sys.stderr',
-        },
-    },
-    'root': {
-        'handlers': ['render_console'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['render_console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'django.request': {
-            'handlers': ['render_console'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-    },
-}
-# ==============================================================================
 
