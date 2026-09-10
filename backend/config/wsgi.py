@@ -21,3 +21,22 @@ except ImportError:
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
+
+# When SQLite is active (e.g. Render demo without managed PostgreSQL),
+# automatically create tables and seed courses on first boot.
+try:
+    from django.db import connection
+    if 'sqlite3' in connection.settings_dict.get('ENGINE', ''):
+        tables = connection.introspection.table_names()
+        if 'core_course' not in tables:
+            from django.core.management import call_command
+            call_command('migrate', interactive=False)
+            try:
+                call_command('seed_courses')
+                call_command('seed_hero_courses')
+            except Exception:
+                pass
+except Exception as e:
+    import logging
+    logging.getLogger('django').error(f"Startup database initialization error: {e}", exc_info=True)
+
