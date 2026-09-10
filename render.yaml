@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: "python manage.py migrate --noinput && python manage.py seed_courses && python manage.py seed_hero_courses && gunicorn config.wsgi:application --workers 2 --bind 0.0.0.0:$PORT"
+    startCommand: "python manage.py migrate --noinput && python manage.py seed_courses && python manage.py seed_hero_courses && python manage.py seed_demo_accounts && gunicorn config.wsgi:application --workers 2 --bind 0.0.0.0:$PORT"
     preDeployCommand: "python manage.py migrate && python manage.py createcachetable"
     envVars:
       - key: PYTHON_VERSION

@@ -474,24 +474,18 @@ def student_change_password(request):
 @login_required(login_url='/parents/student/login/')
 def student_lab_view(request):
     if not hasattr(request.user, 'student_profile'):
-        messages.error(request, 'Access denied.')
-        return redirect('parents:login')
+        messages.error(request, 'Access denied. Please log in as a student to access the Coding Lab.')
+        return redirect('parents:student_login')
     
     student = request.user.student_profile
     
-    # Access Control: Check active enrollment
-    has_active_enrollment = CourseEnrollment.objects.filter(
-        student=student, 
-        status__in=['Active', 'Completed']
-    ).exists()
-    
-    # Logic to check unlocked features based on student level could go here
+    # Lab is unlocked for all authenticated students in the student portal
     unlocked_features = {'code': True, 'circuit': True, 'abacus': True, 'memory': True}
 
     context = {
         'student': student,
         'unlocked_features': unlocked_features,
-        'is_locked': not has_active_enrollment, # Pass locked state
+        'is_locked': False,  # Unlocked upon logging into student portal
     }
     return render(request, 'student_lab.html', context)
 
@@ -611,6 +605,82 @@ def parent_register_view(request):
             return redirect('parents:register')
 
     return render(request, 'parents/parent_register.html')
+
+
+def student_register_view(request):
+    """Handle new student self-registration"""
+    if request.user.is_authenticated and hasattr(request.user, 'student_profile'):
+        return redirect('parents:student_dashboard')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        email = request.POST.get('email', '').strip()
+        full_name = request.POST.get('full_name', '').strip()
+        grade_level = request.POST.get('grade_level', 'Grade 5').strip()
+        date_of_birth = request.POST.get('date_of_birth')
+        parent_phone = request.POST.get('parent_phone', '').strip()
+        emergency_contact = request.POST.get('emergency_contact', '').strip()
+        address = request.POST.get('address', '').strip()
+
+        from django.contrib.auth.models import User
+        if User.objects.filter(username=username).exists():
+            messages.error(request, f'Username "{username}" is already taken. Please choose another.')
+            return render(request, 'parents/student_register.html')
+
+        try:
+            # 1. Create Student User
+            student_user = User.objects.create_user(username=username, email=email, password=password)
+            student_user.first_name = full_name
+            student_user.save()
+
+            # 2. Ensure linked Parent Profile
+            parent_username = f"parent_{username}"
+            if User.objects.filter(username=parent_username).exists():
+                parent_user = User.objects.get(username=parent_username)
+            else:
+                parent_user = User.objects.create_user(
+                    username=parent_username,
+                    email=email,
+                    password=password
+                )
+                parent_user.first_name = f"{full_name}'s Guardian"
+                parent_user.save()
+
+            parent_profile, _ = Parent.objects.get_or_create(
+                user=parent_user,
+                defaults={
+                    'phone_number': parent_phone,
+                    'address': address,
+                    'emergency_contact': emergency_contact
+                }
+            )
+
+            # 3. Create Student Profile
+            from datetime import date
+            dob = date.fromisoformat(date_of_birth) if date_of_birth else timezone.now().date()
+            student = Student.objects.create(
+                user=student_user,
+                parent=parent_profile,
+                full_name=full_name,
+                grade_level=grade_level or 'Grade 5',
+                date_of_birth=dob,
+                enrollment_date=timezone.now().date(),
+                level=1,
+                xp=100
+            )
+
+            # 4. Log in immediately
+            login(request, student_user)
+            messages.success(request, f'Welcome to Inventobots Academy, {full_name}! Your student account is active.')
+            return redirect('parents:student_dashboard')
+
+        except Exception as e:
+            messages.error(request, f'Registration error: {str(e)}')
+            return render(request, 'parents/student_register.html')
+
+    return render(request, 'parents/student_register.html')
+
 
 
 @login_required

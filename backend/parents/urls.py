@@ -6,6 +6,7 @@ app_name = 'parents'
 urlpatterns = [
     path('login/', views.parent_login_view, name='login'),
     path('student/login/', views.student_login_view, name='student_login'),
+    path('student/register/', views.student_register_view, name='student_register'),
     path('register/', views.parent_register_view, name='register'), # Changed from student/register to just /register (or parent/register)
     path('student/add/', views.add_student_view, name='add_student'),
     path('dashboard/', views.parent_dashboard_view, name='dashboard'),

@@ -248,10 +248,17 @@
         </div>
 
         <!-- Footer Links -->
-        <div class="mt-8 text-center space-y-5 fade-up" style="animation-delay: 0.3s;">
-            <p class="text-[15px] text-slate-500 font-medium flex items-center justify-center gap-2">
+        <div class="mt-8 text-center space-y-4 fade-up" style="animation-delay: 0.3s;">
+            <p class="text-[15px] text-slate-400 font-medium flex items-center justify-center gap-2">
+                New student?
+                <a href="{% url 'parents:student_register' %}" class="inline-flex items-center gap-1 font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
+                    Sign Up here →
+                </a>
+            </p>
+
+            <p class="text-[14px] text-slate-500 font-medium flex items-center justify-center gap-2">
                 Are you a parent?
-                <a href="{% url 'parents:login' %}" class="inline-flex items-center gap-1 font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
+                <a href="{% url 'parents:login' %}" class="inline-flex items-center gap-1 font-bold text-slate-400 hover:text-slate-300 transition-colors">
                     Parent Login →
                 </a>
             </p>
